@@ -46,7 +46,7 @@ set "HAS_WINGET=0"
 where winget >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     set "HAS_WINGET=1"
-    echo  ✅ Windows Package Manager (winget): Có sẵn
+    echo  ✅ Windows Package Manager ^(winget^): Có sẵn
 ) else (
     echo  ⚠️  winget không có - sẽ thử phương pháp cài đặt thay thế
 )

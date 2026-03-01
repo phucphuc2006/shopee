@@ -16,7 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "FacebookLoginServlet", urlPatterns = {"/facebook-login"})
 public class FacebookLoginServlet extends HttpServlet {
 
-    private static final String APP_ID = "963325059727599";
+    private static final String APP_ID = ""; // TODO: Add your Facebook App ID
     private static final String REDIRECT_URI = "http://localhost:8080/facebook-callback";
 
     @Override

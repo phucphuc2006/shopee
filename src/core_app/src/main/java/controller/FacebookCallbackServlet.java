@@ -24,8 +24,8 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "FacebookCallbackServlet", urlPatterns = {"/facebook-callback"})
 public class FacebookCallbackServlet extends HttpServlet {
 
-    private static final String APP_ID = "963325059727599";
-    private static final String APP_SECRET = "e00a2ded77666e879792b84f2e2f7f95";
+    private static final String APP_ID = ""; // TODO: Add your Facebook App ID
+    private static final String APP_SECRET = ""; // TODO: Add your Facebook App Secret
     private static final String REDIRECT_URI = "http://localhost:8080/facebook-callback";
     private static final String TOKEN_URL = "https://graph.facebook.com/v18.0/oauth/access_token";
     private static final String USERINFO_URL = "https://graph.facebook.com/me";
