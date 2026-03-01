@@ -665,6 +665,10 @@ if not "!JAVA_EXE_PATH!"=="" (
 )
 echo  [SYSTEM] Da thiet lap JAVA_HOME tu dong: !JAVA_HOME!
 
+:: Diet cac tien trinh Java/Tomcat dang bi ket (ngan chan loi 404/8005)
+echo  [SYSTEM] Dang don dep server cu...
+taskkill /F /IM java.exe >nul 2>&1
+
 :: Khởi động Tomcat (giữ cửa sổ log)
 set "JRE_HOME="
 call "tomcat_dir\apache-tomcat-10.1.19\bin\catalina.bat" run
