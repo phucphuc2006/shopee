@@ -10,6 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -24,8 +25,17 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "FacebookCallbackServlet", urlPatterns = {"/facebook-callback"})
 public class FacebookCallbackServlet extends HttpServlet {
 
-    private static final String APP_ID = ""; // TODO: Add your Facebook App ID
-    private static final String APP_SECRET = ""; // TODO: Add your Facebook App Secret
+    private static final String APP_ID;
+    private static final String APP_SECRET;
+
+    static {
+        Properties props = new Properties();
+        try (InputStream is = FacebookCallbackServlet.class.getClassLoader().getResourceAsStream("db.properties")) {
+            if (is != null) props.load(is);
+        } catch (Exception e) { /* ignore */ }
+        APP_ID = props.getProperty("facebook.app.id", "");
+        APP_SECRET = props.getProperty("facebook.app.secret", "");
+    }
     private static final String REDIRECT_URI = "http://localhost:8080/facebook-callback";
     private static final String TOKEN_URL = "https://graph.facebook.com/v18.0/oauth/access_token";
     private static final String USERINFO_URL = "https://graph.facebook.com/me";

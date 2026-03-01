@@ -441,6 +441,22 @@ if exist "%PROJECT_ROOT%\google_oauth.config" (
     echo     CLIENT_ID=your_google_client_id
     echo     CLIENT_SECRET=your_google_client_secret
 )
+
+echo # FACEBOOK OAUTH 2.0>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
+if exist "%PROJECT_ROOT%\facebook_oauth.config" (
+    for /f "tokens=1,2 delims==" %%A in ('type "%PROJECT_ROOT%\facebook_oauth.config"') do (
+        if "%%A"=="APP_ID" echo facebook.app.id=%%B>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
+        if "%%A"=="APP_SECRET" echo facebook.app.secret=%%B>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
+    )
+    echo  ✅ Đã thêm Facebook OAuth config từ facebook_oauth.config
+) else (
+    echo facebook.app.id=>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
+    echo facebook.app.secret=>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
+    echo  ⚠️  Chưa có file facebook_oauth.config - Facebook Login sẽ không hoạt động
+    echo     Tạo file facebook_oauth.config với nội dung:
+    echo     APP_ID=your_facebook_app_id
+    echo     APP_SECRET=your_facebook_app_secret
+)
 echo  ✅ Đã tự động cập nhật db.properties
 
 echo.

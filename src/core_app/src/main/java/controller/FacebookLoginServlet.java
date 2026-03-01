@@ -1,5 +1,7 @@
 package controller;
 
+import java.io.InputStream;
+import java.util.Properties;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -16,8 +18,16 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "FacebookLoginServlet", urlPatterns = {"/facebook-login"})
 public class FacebookLoginServlet extends HttpServlet {
 
-    private static final String APP_ID = ""; // TODO: Add your Facebook App ID
+    private static final String APP_ID;
     private static final String REDIRECT_URI = "http://localhost:8080/facebook-callback";
+
+    static {
+        Properties props = new Properties();
+        try (InputStream is = FacebookLoginServlet.class.getClassLoader().getResourceAsStream("db.properties")) {
+            if (is != null) props.load(is);
+        } catch (Exception e) { /* ignore */ }
+        APP_ID = props.getProperty("facebook.app.id", "");
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
