@@ -12,7 +12,7 @@ import java.sql.Statement;
 import java.util.Properties;
 
 public class SqlServerImport {
-    private static final String DEFAULT_URL = "jdbc:sqlserver://localhost\\SQLEXPRESS;databaseName=shopeeweb_lab211;encrypt=true;trustServerCertificate=true;";
+    private static final String DEFAULT_URL = "jdbc:sqlserver://localhost;databaseName=shopeeweb_lab211;encrypt=true;trustServerCertificate=true;";
     private static final String DEFAULT_USER = "sa";
     private static final String DEFAULT_PASSWORD = "zxczxc123";
 
@@ -37,7 +37,7 @@ public class SqlServerImport {
 
         // Thử 2: Đọc từ file db.properties ở thư mục gốc core_app
         if (!loaded) {
-            String[] paths = {"db.properties", "../../db.properties", "src/core_app/db.properties"};
+            String[] paths = {"db.properties", "../../db.properties", "src/core_app/db.properties", "src/main/resources/db.properties"};
             for (String path : paths) {
                 File f = new File(path);
                 if (f.exists()) {
@@ -72,14 +72,46 @@ public class SqlServerImport {
     public static void main(String[] args) {
         System.out.println("Connecting to: " + URL);
         System.out.println("User: " + USER);
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        } catch (Exception e) {
+            System.out.println("SQL Auth failed, falling back to Windows Authentication...");
+            try {
+                String winAuthUrl = URL;
+                if (!winAuthUrl.toLowerCase().contains("integratedsecurity")) {
+                    if (!winAuthUrl.endsWith(";")) winAuthUrl += ";";
+                    winAuthUrl += "integratedSecurity=true;";
+                }
+                conn = DriverManager.getConnection(winAuthUrl);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return;
+            }
+        }
+
+        try {
             System.out.println("Connected to SQL Server.");
 
+            String[] clearCommands = {
+                "DELETE FROM order_items",
+                "DELETE FROM orders",
+                "DELETE FROM product_reviews",
+                "DELETE FROM cart_items",
+                "DELETE FROM product_variants",
+                "DELETE FROM products",
+                "DELETE FROM shops",
+                "SET IDENTITY_INSERT shops ON"
+            };
             try (Statement stmt = conn.createStatement()) {
-                stmt.execute("DELETE FROM product_variants");
-                stmt.execute("DELETE FROM products");
-                stmt.execute("DELETE FROM shops");
-                stmt.execute("SET IDENTITY_INSERT shops ON");
+                for (String cmd : clearCommands) {
+                    try {
+                        stmt.execute(cmd);
+                    } catch (Exception ex) {
+                        // Bỏ qua lỗi nếu bảng không tồn tại hoặc lỗi khóa ngoại (nếu data rỗng)
+                    }
+                }
             }
             try (PreparedStatement pstmt = conn
                     .prepareStatement("INSERT INTO shops (id, owner_id, shop_name, rating) VALUES (?, ?, ?, ?)");
@@ -168,6 +200,7 @@ public class SqlServerImport {
                 stmt.execute("SET IDENTITY_INSERT product_variants OFF");
             }
             System.out.println("Import successful!");
+            conn.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

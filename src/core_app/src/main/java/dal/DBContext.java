@@ -57,7 +57,19 @@ public class DBContext {
     public Connection getConnection() {
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            return DriverManager.getConnection(DB_URL, USER, PASS);
+            try {
+                // Thử kết nối bằng Username/Password (SQL Authentication)
+                return DriverManager.getConnection(DB_URL, USER, PASS);
+            } catch (SQLException e) {
+                // Nếu thất bại, thử kết nối bằng Windows Authentication
+                System.out.println("SQL Auth failed, falling back to Windows Authentication...");
+                String winAuthUrl = DB_URL;
+                if (!winAuthUrl.toLowerCase().contains("integratedsecurity")) {
+                    if (!winAuthUrl.endsWith(";")) winAuthUrl += ";";
+                    winAuthUrl += "integratedSecurity=true;";
+                }
+                return DriverManager.getConnection(winAuthUrl);
+            }
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
             return null;

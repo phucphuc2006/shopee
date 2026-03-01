@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-title ShopeeWeb - Cai Dat & Chay Tu Dong (FULL AUTO)
+title ShopeeWeb - Cai Dat ^& Chay Tu Dong (FULL AUTO)
 color 0B
 setlocal EnableDelayedExpansion
 
@@ -46,7 +46,7 @@ set "HAS_WINGET=0"
 where winget >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     set "HAS_WINGET=1"
-    echo  ✅ Windows Package Manager (winget): Có sẵn
+    echo  ✅ Windows Package Manager ^(winget^): Có sẵn
 ) else (
     echo  ⚠️  winget không có - sẽ thử phương pháp cài đặt thay thế
 )
@@ -145,6 +145,7 @@ if %ERRORLEVEL% NEQ 0 (
         )
     )
 ) else (
+    set "MVN_CMD=mvn"
     echo  ✅ Maven: Đã cài đặt
 )
 
@@ -417,25 +418,26 @@ echo     Password: !DB_PASS!
 echo.
 
 :: Tạo db.properties tự động
-echo # CAU HINH KET NOI SQL SERVER (TU DONG PHAT HIEN)> "%PROJECT_ROOT%\src\core_app\db.properties"
+if not exist "%PROJECT_ROOT%\src\core_app\src\main\resources" mkdir "%PROJECT_ROOT%\src\core_app\src\main\resources"
+echo # CAU HINH KET NOI SQL SERVER (TU DONG PHAT HIEN)> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
 if "!SQL_INSTANCE!"=="" (
-    echo db.url=jdbc:sqlserver://localhost:1433;databaseName=shopeeweb_lab211;encrypt=true;trustServerCertificate=true;>> "%PROJECT_ROOT%\src\core_app\db.properties"
+    echo db.url=jdbc:sqlserver://localhost:1433;databaseName=shopeeweb_lab211;encrypt=true;trustServerCertificate=true;>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
 ) else (
-    echo db.url=jdbc:sqlserver://localhost;instanceName=!SQL_INSTANCE!;databaseName=shopeeweb_lab211;encrypt=true;trustServerCertificate=true;>> "%PROJECT_ROOT%\src\core_app\db.properties"
+    echo db.url=jdbc:sqlserver://localhost;instanceName=!SQL_INSTANCE!;databaseName=shopeeweb_lab211;encrypt=true;trustServerCertificate=true;>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
 )
-echo db.user=sa>> "%PROJECT_ROOT%\src\core_app\db.properties"
-echo db.password=!DB_PASS!>> "%PROJECT_ROOT%\src\core_app\db.properties"
-echo.>> "%PROJECT_ROOT%\src\core_app\db.properties"
-echo # GOOGLE OAUTH 2.0>> "%PROJECT_ROOT%\src\core_app\db.properties"
+echo db.user=sa>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
+echo db.password=!DB_PASS!>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
+echo.>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
+echo # GOOGLE OAUTH 2.0>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
 if exist "%PROJECT_ROOT%\google_oauth.config" (
     for /f "tokens=1,2 delims==" %%A in ('type "%PROJECT_ROOT%\google_oauth.config"') do (
-        if "%%A"=="CLIENT_ID" echo google.client.id=%%B>> "%PROJECT_ROOT%\src\core_app\db.properties"
-        if "%%A"=="CLIENT_SECRET" echo google.client.secret=%%B>> "%PROJECT_ROOT%\src\core_app\db.properties"
+        if "%%A"=="CLIENT_ID" echo google.client.id=%%B>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
+        if "%%A"=="CLIENT_SECRET" echo google.client.secret=%%B>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
     )
     echo  ✅ Đã thêm Google OAuth config từ google_oauth.config
 ) else (
-    echo google.client.id=>> "%PROJECT_ROOT%\src\core_app\db.properties"
-    echo google.client.secret=>> "%PROJECT_ROOT%\src\core_app\db.properties"
+    echo google.client.id=>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
+    echo google.client.secret=>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
     echo  ⚠️  Chưa có file google_oauth.config - Google Login sẽ không hoạt động
     echo     Tạo file google_oauth.config với nội dung:
     echo     CLIENT_ID=your_google_client_id
@@ -523,46 +525,21 @@ echo ═════════════════════════
 :: BƯỚC 4: IMPORT DỮ LIỆU VÀO DATABASE
 :: ============================================
 echo.
-echo  [4/7] 📥 Đang import dữ liệu vào Database...
+echo  [4/7] 📥 Đang xóa dữ liệu cũ và import dữ liệu mới vào Database...
 
 cd /d "%PROJECT_ROOT%\src\core_app"
 
-:: Kiểm tra nhanh xem DB đã có data chưa
-set "NEED_IMPORT=1"
-if "%HAS_SQLCMD%"=="1" (
-    for /f "tokens=*" %%A in ('sqlcmd -S !SQL_SERVER! -U sa -P !DB_PASS! -C -d shopeeweb_lab211 -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM products;" -h -1 -b 2^>nul') do (
-        set "PRODUCT_COUNT=%%A"
-    )
-    set "PRODUCT_COUNT=!PRODUCT_COUNT: =!"
-    if "!PRODUCT_COUNT!" GEQ "100" (
-        echo  ✅ Database đã có !PRODUCT_COUNT! sản phẩm - bỏ qua import!
-        set "NEED_IMPORT=0"
+if exist "%PROJECT_ROOT%\data\products.csv" (
+    echo     Đang import dữ liệu ^(có thể mất 1-2 phút^)...
+    cmd /c "%MVN_CMD% clean compile exec:java -Dexec.mainClass=migration.SqlServerImport -q"
+    if !ERRORLEVEL! EQU 0 (
+        echo  ✅ Import dữ liệu thành công!
+    ) else (
+        echo  ⚠️  Import gặp lỗi - server vẫn chạy nhưng có thể thiếu data
     )
 ) else (
-    :: Kiểm tra bằng PowerShell
-    for /f "tokens=*" %%A in ('powershell -NoProfile -Command "try { $conn = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;Database=shopeeweb_lab211;TrustServerCertificate=True;'); $conn.Open(); $cmd = $conn.CreateCommand(); $cmd.CommandText = 'SELECT COUNT(*) FROM products'; $result = $cmd.ExecuteScalar(); $conn.Close(); Write-Output $result } catch { Write-Output 0 }" 2^>nul') do (
-        set "PRODUCT_COUNT=%%A"
-    )
-    set "PRODUCT_COUNT=!PRODUCT_COUNT: =!"
-    if "!PRODUCT_COUNT!" GEQ "100" (
-        echo  ✅ Database đã có !PRODUCT_COUNT! sản phẩm - bỏ qua import!
-        set "NEED_IMPORT=0"
-    )
-)
-
-if "%NEED_IMPORT%"=="1" (
-    if exist "%PROJECT_ROOT%\data\products.csv" (
-        echo     Đang import dữ liệu ^(có thể mất 1-2 phút^)...
-        cmd /c "%MVN_CMD% clean compile exec:java -Dexec.mainClass=migration.SqlServerImport -q"
-        if !ERRORLEVEL! EQU 0 (
-            echo  ✅ Import dữ liệu thành công!
-        ) else (
-            echo  ⚠️  Import gặp lỗi - server vẫn chạy nhưng có thể thiếu data
-        )
-    ) else (
-        echo  ⚠️  Không tìm thấy file CSV trong thư mục data/
-        echo     → Chạy: python data/shopee_scraper.py trước
-    )
+    echo  ⚠️  Không tìm thấy file CSV trong thư mục data/
+    echo     → Chạy: python data/shopee_scraper.py trước
 )
 
 echo.
@@ -594,9 +571,9 @@ echo.
 cd /d "%PROJECT_ROOT%\src\core_app"
 del /f /q "target\shopee-web-1.0-SNAPSHOT.war" >nul 2>&1
 
-set "BUILD_LOG=%TEMP%\shopee_build.log"
-cmd /c "%MVN_CMD% clean package > "%BUILD_LOG%" 2>&1"
-set BUILD_EXIT=%ERRORLEVEL%
+set "BUILD_LOG=%TEMP%\shopee_build_!RANDOM!.log"
+cmd /c "%MVN_CMD% clean package > "!BUILD_LOG!" 2>&1"
+set BUILD_EXIT=!ERRORLEVEL!
 
 copy /Y "%BUILD_LOG%" "%PROJECT_ROOT%\build_log.txt" >nul 2>&1
 
@@ -666,9 +643,32 @@ echo.
 :: Tự mở trình duyệt sau 10 giây
 start "" cmd /c "timeout /t 10 /nobreak >nul && start http://localhost:8080/home"
 
-:: Khởi động Tomcat (giữ cửa sổ log)
-call "tomcat_dir\apache-tomcat-10.1.19\bin\catalina.bat" run
+:: Tìm đường dẫn Java thực tế (Bỏ qua cái thư mục ảo của Oracle)
+set "JAVA_EXE_PATH="
+for /f "tokens=*" %%i in ('where java') do (
+    echo %%i | findstr /i /v "Oracle" >nul
+    if !ERRORLEVEL! EQU 0 (
+        if "!JAVA_EXE_PATH!"=="" set "JAVA_EXE_PATH=%%i"
+    )
+)
 
+if not "!JAVA_EXE_PATH!"=="" (
+    :: Cắt bớt thư mục \bin\java.exe để lấy JAVA_HOME
+    for %%A in ("!JAVA_EXE_PATH!") do set "JAVA_BIN_DIR=%%~dpA"
+    set "JAVA_HOME=!JAVA_BIN_DIR:~0,-5!"
+) else (
+    :: Nếu vẫn toàn thấy thư mục ảo, thử mò trực tiếp trong Program Files
+    for /d %%J in ("C:\Program Files\Java\jdk*") do set "JAVA_HOME=%%J"
+    for /d %%J in ("C:\Program Files\Eclipse Adoptium\jdk*") do set "JAVA_HOME=%%J"
+    for /d %%J in ("C:\Program Files\Amazon\Corretto\jdk*") do set "JAVA_HOME=%%J"
+    for /d %%J in ("C:\Program Files\Microsoft\jdk*") do set "JAVA_HOME=%%J"
+)
+echo  [SYSTEM] Da thiet lap JAVA_HOME tu dong: !JAVA_HOME!
+
+:: Khởi động Tomcat (giữ cửa sổ log)
+set "JRE_HOME="
+call "tomcat_dir\apache-tomcat-10.1.19\bin\catalina.bat" run
+pause
 :: ============================================
 :: HÀM PHỤ TRỢ
 :: ============================================
