@@ -82,7 +82,7 @@ if %ERRORLEVEL% NEQ 0 (
         pause
         exit /b 1
     )
-    :: Refresh PATH sau khi cài
+    rem Refresh PATH sau khi cài
     call :REFRESH_PATH
 ) else (
     echo  ✅ Java: Đã cài đặt
@@ -96,7 +96,7 @@ echo  ── Kiểm tra Apache Maven ──
 set "MVN_CMD=mvn.cmd"
 where mvn >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    :: Kiểm tra các vị trí phổ biến
+    rem Kiểm tra các vị trí phổ biến
     if exist "C:\maven\bin\mvn.cmd" (
         set "MVN_CMD=C:\maven\bin\mvn.cmd"
         echo  ✅ Maven: Đã cài đặt ^(C:\maven^)
@@ -106,7 +106,7 @@ if %ERRORLEVEL% NEQ 0 (
     ) else (
         echo  ❌ Maven chưa cài đặt. Đang tự động cài...
         
-        :: Tải Maven bằng PowerShell
+        rem Tải Maven bằng PowerShell
         set "MAVEN_VER=3.9.9"
         set "MAVEN_URL=https://dlcdn.apache.org/maven/maven-3/!MAVEN_VER!/binaries/apache-maven-!MAVEN_VER!-bin.zip"
         set "MAVEN_ZIP=%TEMP%\maven.zip"
@@ -119,13 +119,13 @@ if %ERRORLEVEL% NEQ 0 (
             echo     📂 Đang giải nén...
             powershell -NoProfile -Command "Expand-Archive -Path '!MAVEN_ZIP!' -DestinationPath 'C:\' -Force" >nul 2>&1
             
-            :: Rename thư mục
+            rem Rename thư mục
             if exist "C:\apache-maven-!MAVEN_VER!" (
                 if exist "C:\maven" rmdir /s /q "C:\maven" >nul 2>&1
                 ren "C:\apache-maven-!MAVEN_VER!" "maven" >nul 2>&1
             )
             
-            :: Thêm vào PATH hệ thống
+            rem Thêm vào PATH hệ thống
             if exist "C:\maven\bin\mvn.cmd" (
                 powershell -NoProfile -Command "$oldPath = [Environment]::GetEnvironmentVariable('PATH', 'Machine'); if ($oldPath -notlike '*C:\maven\bin*') { [Environment]::SetEnvironmentVariable('PATH', $oldPath + ';C:\maven\bin', 'Machine') }"
                 set "MVN_CMD=C:\maven\bin\mvn.cmd"
@@ -238,7 +238,7 @@ set "SQL_INSTANCE="
 set "SQL_SVC_NAME="
 for /f "tokens=2 delims=: " %%N in ('sc query state^= all ^| findstr /i "SERVICE_NAME.*MSSQL"') do (
     set "TEMP_SVC=%%N"
-    :: Kiểm tra nếu service đang chạy
+    rem Kiểm tra nếu service đang chạy
     sc query "%%N" 2>nul | findstr /i "RUNNING" >nul 2>&1
     if !ERRORLEVEL! EQU 0 (
         if "!SQL_SVC_NAME!"=="" (
@@ -269,7 +269,7 @@ if "!SQL_SVC_NAME!"=="" (
                 for /f "tokens=2 delims=$" %%I in ("%%N") do set "SQL_INSTANCE=%%I"
             )
             
-            :: Đợi service khởi động
+            rem Đợi service khởi động
             timeout /t 5 /nobreak >nul
             sc query "%%N" 2>nul | findstr /i "RUNNING" >nul 2>&1
             if !ERRORLEVEL! EQU 0 (
@@ -303,7 +303,7 @@ if "!SQL_INSTANCE!"=="" (
 :: Bật Mixed Authentication Mode qua Registry
 reg add "HKLM\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL16.!REG_INSTANCE!\MSSQLServer" /v LoginMode /t REG_DWORD /d 2 /f >nul 2>&1
 if !ERRORLEVEL! NEQ 0 (
-    :: Thử các phiên bản SQL Server khác
+    rem Thử các phiên bản SQL Server khác
     reg add "HKLM\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL15.!REG_INSTANCE!\MSSQLServer" /v LoginMode /t REG_DWORD /d 2 /f >nul 2>&1
     if !ERRORLEVEL! NEQ 0 (
         reg add "HKLM\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL14.!REG_INSTANCE!\MSSQLServer" /v LoginMode /t REG_DWORD /d 2 /f >nul 2>&1
@@ -315,7 +315,7 @@ echo     ✅ Đã bật SQL Server Authentication Mode (Mixed Mode)
 echo     🔧 Đang bật TCP/IP...
 powershell -NoProfile -Command "try { Import-Module SQLPS -DisableNameChecking -ErrorAction SilentlyContinue; $wmi = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer; $tcp = $wmi.ServerInstances['!REG_INSTANCE!'].ServerProtocols['Tcp']; $tcp.IsEnabled = $true; $tcp.Alter(); exit 0 } catch { exit 1 }" >nul 2>&1
 if !ERRORLEVEL! NEQ 0 (
-    :: Thử bật TCP/IP qua Registry trực tiếp
+    rem Thử bật TCP/IP qua Registry trực tiếp
     for /f "tokens=*" %%K in ('reg query "HKLM\SOFTWARE\Microsoft\Microsoft SQL Server" /s /f "SuperSocketNetLib\Tcp" /k 2^>nul ^| findstr /i "SuperSocketNetLib\\Tcp$"') do (
         reg add "%%K" /v Enabled /t REG_DWORD /d 1 /f >nul 2>&1
     )
@@ -348,7 +348,7 @@ if "%HAS_SQLCMD%"=="1" (
         echo     ⚠️  SA có thể đã được cấu hình trước đó
     )
 ) else (
-    :: Dùng PowerShell nếu không có sqlcmd
+    rem Dùng PowerShell nếu không có sqlcmd
     powershell -NoProfile -Command "try { $conn = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;Integrated Security=True;TrustServerCertificate=True;'); $conn.Open(); $cmd = $conn.CreateCommand(); $cmd.CommandText = 'ALTER LOGIN [sa] ENABLE; ALTER LOGIN [sa] WITH PASSWORD = ''!SA_PASS!''; ALTER LOGIN [sa] WITH CHECK_POLICY = OFF;'; $cmd.ExecuteNonQuery(); $conn.Close(); exit 0 } catch { exit 1 }" >nul 2>&1
     if !ERRORLEVEL! EQU 0 (
         echo     ✅ Đã kích hoạt tài khoản SA ^(password: !SA_PASS!^)
@@ -473,7 +473,7 @@ if "!DB_CREATED!"=="0" (
 if "!DB_CREATED!"=="1" (
     echo  ✅ Đã tạo/xác nhận database: shopeeweb_lab211
 
-    :: Chạy script khởi tạo bảng
+    rem Chạy script khởi tạo bảng
     echo     Đang tạo các bảng dữ liệu...
     if "%HAS_SQLCMD%"=="1" (
         sqlcmd -S !SQL_SERVER! -U sa -P !DB_PASS! -C -d shopeeweb_lab211 -i "%PROJECT_ROOT%\src\core_app\init_sqlserver.sql" -b >nul 2>&1
@@ -501,7 +501,7 @@ if exist "%PROJECT_ROOT%\data\products.csv" (
 ) else (
     if "%HAS_PYTHON%"=="1" (
         echo     Đang sinh 12,000 sản phẩm mẫu...
-        :: Cài thư viện requests nếu cần
+        rem Cài thư viện requests nếu cần
         %PYTHON_CMD% -m pip install requests >nul 2>&1
         cd /d "%PROJECT_ROOT%"
         %PYTHON_CMD% data/shopee_scraper.py
@@ -539,7 +539,7 @@ if "%HAS_SQLCMD%"=="1" (
         set "NEED_IMPORT=0"
     )
 ) else (
-    :: Kiểm tra bằng PowerShell
+    rem Kiểm tra bằng PowerShell
     for /f "tokens=*" %%A in ('powershell -NoProfile -Command "try { $conn = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;Database=shopeeweb_lab211;TrustServerCertificate=True;'); $conn.Open(); $cmd = $conn.CreateCommand(); $cmd.CommandText = 'SELECT COUNT(*) FROM products'; $result = $cmd.ExecuteScalar(); $conn.Close(); Write-Output $result } catch { Write-Output 0 }" 2^>nul') do (
         set "PRODUCT_COUNT=%%A"
     )
