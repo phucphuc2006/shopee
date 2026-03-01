@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-title ShopeeWeb - Cai Dat & Chay Tu Dong (FULL AUTO)
+title ShopeeWeb - Cai Dat - Chay Tu Dong (FULL AUTO)
 color 0B
 setlocal EnableDelayedExpansion
 
