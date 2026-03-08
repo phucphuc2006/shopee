@@ -38,7 +38,7 @@ echo ═════════════════════════
 :: BƯỚC 0: KIỂM TRA & TỰ ĐỘNG CÀI PHẦN MỀM
 :: ============================================
 echo.
-echo  [0/7] 🔍 Đang kiểm tra và cài đặt phần mềm tự động...
+echo  [0/9] 🔍 Đang kiểm tra và cài đặt phần mềm tự động...
 echo.
 
 :: ─── Kiểm tra winget ───
@@ -408,7 +408,7 @@ echo ═════════════════════════
 :: BƯỚC 1: CẬP NHẬT db.properties
 :: ============================================
 echo.
-echo  [1/7] 📝 Đang cập nhật cấu hình kết nối...
+echo  [1/9] 📝 Đang cập nhật cấu hình kết nối...
 echo.
 echo  📋 Cấu hình:
 echo     Server:   !SQL_SERVER!
@@ -463,10 +463,10 @@ echo.
 echo ═══════════════════════════════════════════════════════════
 
 :: ============================================
-:: BƯỚC 2: TẠO DATABASE
+:: BƯỚC 2: TẠO DATABASE & BẢNG
 :: ============================================
 echo.
-echo  [2/7] 🗄️  Đang tạo Database...
+echo  [2/9] 🗄️  Đang tạo Database và các bảng...
 echo.
 
 set "DB_CREATED=0"
@@ -510,7 +510,7 @@ echo ═════════════════════════
 :: BƯỚC 3: SINH DỮ LIỆU MẪU
 :: ============================================
 echo.
-echo  [3/7] 📊 Đang kiểm tra dữ liệu mẫu...
+echo  [3/9] 📊 Đang kiểm tra dữ liệu mẫu...
 
 if exist "%PROJECT_ROOT%\data\products.csv" (
     echo  ✅ Dữ liệu mẫu đã có sẵn - bỏ qua!
@@ -536,41 +536,132 @@ echo.
 echo ═══════════════════════════════════════════════════════════
 
 :: ============================================
-:: BƯỚC 4: IMPORT DỮ LIỆU VÀO DATABASE
+:: BƯỚC 4: IMPORT DỮ LIỆU TỪ CSV VÀO DATABASE
 :: ============================================
 echo.
-echo  [4/7] 📥 Đang import dữ liệu vào Database...
+echo  [4/9] 📥 Đang import dữ liệu vào Database...
 
 cd /d "%PROJECT_ROOT%\src\core_app"
 
 :: Kiểm tra nhanh xem DB đã có data chưa
 set "NEED_IMPORT=1"
-if "%HAS_SQLCMD%"=="1" (
-    for /f "tokens=*" %%A in ('sqlcmd -S !SQL_SERVER! -U sa -P !DB_PASS! -C -d shopeeweb_lab211 -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM products;" -h -1 -b 2^>nul') do (
-        set "PRODUCT_COUNT=%%A"
-    )
-    set "PRODUCT_COUNT=!PRODUCT_COUNT: =!"
-    if "!PRODUCT_COUNT!" GEQ "100" (
-        echo  ✅ Database đã có !PRODUCT_COUNT! sản phẩm - bỏ qua import!
-        set "NEED_IMPORT=0"
-    )
-) else (
-    rem Kiểm tra bằng PowerShell
-    for /f "tokens=*" %%A in ('powershell -NoProfile -Command "try { $conn = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;Database=shopeeweb_lab211;TrustServerCertificate=True;'); $conn.Open(); $cmd = $conn.CreateCommand(); $cmd.CommandText = 'SELECT COUNT(*) FROM products'; $result = $cmd.ExecuteScalar(); $conn.Close(); Write-Output $result } catch { Write-Output 0 }" 2^>nul') do (
-        set "PRODUCT_COUNT=%%A"
-    )
-    set "PRODUCT_COUNT=!PRODUCT_COUNT: =!"
-    if "!PRODUCT_COUNT!" GEQ "100" (
-        echo  ✅ Database đã có !PRODUCT_COUNT! sản phẩm - bỏ qua import!
-        set "NEED_IMPORT=0"
-    )
+set "PRODUCT_COUNT=0"
+
+:: Kiểm tra số lượng sản phẩm hiện có
+powershell -NoProfile -Command "try { $conn = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;Database=shopeeweb_lab211;TrustServerCertificate=True;'); $conn.Open(); $cmd = $conn.CreateCommand(); $cmd.CommandText = 'SELECT COUNT(*) FROM products'; $result = $cmd.ExecuteScalar(); $conn.Close(); Write-Output $result } catch { Write-Output 0 }" 2>nul > "%TEMP%\product_count.txt"
+set /p PRODUCT_COUNT=<"%TEMP%\product_count.txt"
+set "PRODUCT_COUNT=!PRODUCT_COUNT: =!"
+del /f /q "%TEMP%\product_count.txt" >nul 2>&1
+
+if "!PRODUCT_COUNT!" GEQ "100" (
+    echo  ✅ Database đã có !PRODUCT_COUNT! sản phẩm - bỏ qua import!
+    set "NEED_IMPORT=0"
 )
 
 if "%NEED_IMPORT%"=="1" (
     if exist "%PROJECT_ROOT%\data\products.csv" (
-        echo     Đang import dữ liệu ^(có thể mất 1-2 phút^)...
-        cmd /c "%MVN_CMD% clean compile exec:java -Dexec.mainClass=migration.SqlServerImport -q"
+        echo     Đang import dữ liệu từ CSV ^(có thể mất 1-3 phút^)...
+        echo.
+
+        :: ─── Import bằng PowerShell (không cần Maven/Java) ───
+        powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+        "$ErrorActionPreference = 'Continue';" ^
+        "$server = '!SQL_SERVER!';" ^
+        "$pass = '!DB_PASS!';" ^
+        "$dataDir = '!PROJECT_ROOT!\data';" ^
+        "" ^
+        "try {" ^
+        "  $conn = New-Object System.Data.SqlClient.SqlConnection(\"Server=$server;User Id=sa;Password=$pass;Database=shopeeweb_lab211;TrustServerCertificate=True;\");" ^
+        "  $conn.Open();" ^
+        "  Write-Host '  ✅ Kết nối DB thành công';" ^
+        "" ^
+        "  # 1. Import Shops" ^
+        "  $shopsFile = Join-Path $dataDir 'shops.csv';" ^
+        "  if (Test-Path $shopsFile) {" ^
+        "    $shops = Import-Csv $shopsFile;" ^
+        "    $shopCount = 0;" ^
+        "    foreach ($s in $shops) {" ^
+        "      $cmd = $conn.CreateCommand();" ^
+        "      $cmd.CommandText = \"SET IDENTITY_INSERT shops ON; IF NOT EXISTS (SELECT 1 FROM shops WHERE id=$($s.id)) INSERT INTO shops (id, owner_id, shop_name, rating) VALUES ($($s.id), 1, N'$($s.shop_name -replace \"'\",\"''\")', $($s.rating)); SET IDENTITY_INSERT shops OFF;\";" ^
+        "      $cmd.ExecuteNonQuery() | Out-Null;" ^
+        "      $shopCount++;" ^
+        "    }" ^
+        "    Write-Host \"  ✅ Import shops: $shopCount shops\";" ^
+        "  }" ^
+        "" ^
+        "  # 2. Import Products (batch insert)" ^
+        "  $productsFile = Join-Path $dataDir 'products.csv';" ^
+        "  if (Test-Path $productsFile) {" ^
+        "    Write-Host '     Đang import products...';" ^
+        "    $reader = [System.IO.StreamReader]::new($productsFile, [System.Text.Encoding]::UTF8);" ^
+        "    $header = $reader.ReadLine();" ^
+        "    $prodCount = 0;" ^
+        "    $cmd2 = $conn.CreateCommand();" ^
+        "    $cmd2.CommandText = 'SET IDENTITY_INSERT products ON';" ^
+        "    $cmd2.ExecuteNonQuery() | Out-Null;" ^
+        "    while ($null -ne ($line = $reader.ReadLine())) {" ^
+        "      $parts = $line -split ',',6;" ^
+        "      if ($parts.Count -ge 6) {" ^
+        "        try {" ^
+        "          $cmd3 = $conn.CreateCommand();" ^
+        "          $pname = $parts[2] -replace \"'\",\"''\";" ^
+        "          $pdesc = $parts[3] -replace \"'\",\"''\";" ^
+        "          $cmd3.CommandText = \"IF NOT EXISTS (SELECT 1 FROM products WHERE id=$($parts[0])) INSERT INTO products (id,shop_id,name,description,price,image_url) VALUES ($($parts[0]),$($parts[1]),N'$pname',N'$pdesc',$($parts[4]),'$($parts[5])')\";" ^
+        "          $cmd3.ExecuteNonQuery() | Out-Null;" ^
+        "          $prodCount++;" ^
+        "          if ($prodCount %% 2000 -eq 0) { Write-Host \"     → $prodCount sản phẩm...\" }" ^
+        "        } catch {}" ^
+        "      }" ^
+        "    }" ^
+        "    $reader.Close();" ^
+        "    $cmd4 = $conn.CreateCommand();" ^
+        "    $cmd4.CommandText = 'SET IDENTITY_INSERT products OFF';" ^
+        "    $cmd4.ExecuteNonQuery() | Out-Null;" ^
+        "    Write-Host \"  ✅ Import products: $prodCount sản phẩm\";" ^
+        "  }" ^
+        "" ^
+        "  # 3. Import Product Variants (batch insert)" ^
+        "  $variantsFile = Join-Path $dataDir 'product_variants.csv';" ^
+        "  if (Test-Path $variantsFile) {" ^
+        "    Write-Host '     Đang import product_variants...';" ^
+        "    $reader2 = [System.IO.StreamReader]::new($variantsFile, [System.Text.Encoding]::UTF8);" ^
+        "    $header2 = $reader2.ReadLine();" ^
+        "    $varCount = 0;" ^
+        "    $cmd5 = $conn.CreateCommand();" ^
+        "    $cmd5.CommandText = 'SET IDENTITY_INSERT product_variants ON';" ^
+        "    $cmd5.ExecuteNonQuery() | Out-Null;" ^
+        "    while ($null -ne ($line2 = $reader2.ReadLine())) {" ^
+        "      $p2 = $line2 -split ',',7;" ^
+        "      if ($p2.Count -ge 6) {" ^
+        "        try {" ^
+        "          $cmd6 = $conn.CreateCommand();" ^
+        "          $stock = [Math]::Max(0, [int]$p2[4]);" ^
+        "          $price = [double]$p2[5]; if ($price -le 0) { $price = 50000 };" ^
+        "          $note = if ($p2.Count -ge 7) { $p2[6] -replace \"'\",\"''\" } else { '' };" ^
+        "          $cmd6.CommandText = \"IF NOT EXISTS (SELECT 1 FROM product_variants WHERE id=$($p2[0])) INSERT INTO product_variants (id,product_id,color,size,stock,price,note) VALUES ($($p2[0]),$($p2[1]),N'$($p2[2])',N'$($p2[3])',$stock,$price,N'$note')\";" ^
+        "          $cmd6.ExecuteNonQuery() | Out-Null;" ^
+        "          $varCount++;" ^
+        "          if ($varCount %% 5000 -eq 0) { Write-Host \"     → $varCount variants...\" }" ^
+        "        } catch {}" ^
+        "      }" ^
+        "    }" ^
+        "    $reader2.Close();" ^
+        "    $cmd7 = $conn.CreateCommand();" ^
+        "    $cmd7.CommandText = 'SET IDENTITY_INSERT product_variants OFF';" ^
+        "    $cmd7.ExecuteNonQuery() | Out-Null;" ^
+        "    Write-Host \"  ✅ Import variants: $varCount variants\";" ^
+        "  }" ^
+        "" ^
+        "  $conn.Close();" ^
+        "  Write-Host '  ✅ Import dữ liệu hoàn tất!';" ^
+        "  exit 0;" ^
+        "} catch {" ^
+        "  Write-Host \"  ❌ Lỗi import: $_\";" ^
+        "  exit 1;" ^
+        "}"
+
         if !ERRORLEVEL! EQU 0 (
+            echo.
             echo  ✅ Import dữ liệu thành công!
         ) else (
             echo  ⚠️  Import gặp lỗi - server vẫn chạy nhưng có thể thiếu data
@@ -585,10 +676,58 @@ echo.
 echo ═══════════════════════════════════════════════════════════
 
 :: ============================================
-:: BƯỚC 5: TẮT TOMCAT CŨ
+:: BƯỚC 5: FIX CATEGORY MAPPING
 :: ============================================
 echo.
-echo  [5/7] 🔄 Đang tắt Tomcat cũ ^(nếu có^)...
+echo  [5/9] 🏷️  Đang gán category cho sản phẩm...
+
+if exist "%PROJECT_ROOT%\src\core_app\fix_category_v2.sql" (
+    if "%HAS_SQLCMD%"=="1" (
+        sqlcmd -S !SQL_SERVER! -U sa -P !DB_PASS! -C -d shopeeweb_lab211 -i "%PROJECT_ROOT%\src\core_app\fix_category_v2.sql" -b >nul 2>&1
+    ) else (
+        powershell -NoProfile -Command "try { $conn = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;Database=shopeeweb_lab211;TrustServerCertificate=True;'); $conn.Open(); $sql = Get-Content '!PROJECT_ROOT!\src\core_app\fix_category_v2.sql' -Raw; foreach($batch in ($sql -split '\bGO\b')) { if($batch.Trim()) { $cmd = $conn.CreateCommand(); $cmd.CommandText = $batch; $cmd.CommandTimeout = 120; $cmd.ExecuteNonQuery() | Out-Null } }; $conn.Close(); exit 0 } catch { exit 1 }" >nul 2>&1
+    )
+    if !ERRORLEVEL! EQU 0 (
+        echo  ✅ Đã gán category cho tất cả sản phẩm!
+    ) else (
+        echo  ⚠️  Fix category có thể đã chạy trước đó - tiếp tục...
+    )
+) else (
+    echo  ⚠️  Không tìm thấy fix_category_v2.sql - bỏ qua
+)
+
+echo.
+echo ═══════════════════════════════════════════════════════════
+
+:: ============================================
+:: BƯỚC 6: TẠO DATABASE INDEXES
+:: ============================================
+echo.
+echo  [6/9] ⚡ Đang tạo indexes tối ưu hiệu suất...
+
+if exist "%PROJECT_ROOT%\src\core_app\create_indexes.sql" (
+    if "%HAS_SQLCMD%"=="1" (
+        sqlcmd -S !SQL_SERVER! -U sa -P !DB_PASS! -C -d shopeeweb_lab211 -i "%PROJECT_ROOT%\src\core_app\create_indexes.sql" -b >nul 2>&1
+    ) else (
+        powershell -NoProfile -Command "try { $conn = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;Database=shopeeweb_lab211;TrustServerCertificate=True;'); $conn.Open(); $sql = Get-Content '!PROJECT_ROOT!\src\core_app\create_indexes.sql' -Raw; foreach($batch in ($sql -split '\bGO\b')) { if($batch.Trim()) { $cmd = $conn.CreateCommand(); $cmd.CommandText = $batch; $cmd.ExecuteNonQuery() | Out-Null } }; $conn.Close(); exit 0 } catch { exit 1 }" >nul 2>&1
+    )
+    if !ERRORLEVEL! EQU 0 (
+        echo  ✅ Đã tạo indexes tối ưu hiệu suất!
+    ) else (
+        echo  ⚠️  Indexes có thể đã tồn tại - tiếp tục...
+    )
+) else (
+    echo  ⚠️  Không tìm thấy create_indexes.sql - bỏ qua
+)
+
+echo.
+echo ═══════════════════════════════════════════════════════════
+
+:: ============================================
+:: BƯỚC 7: TẮT TOMCAT CŨ
+:: ============================================
+echo.
+echo  [7/9] 🔄 Đang tắt Tomcat cũ ^(nếu có^)...
 
 cd /d "%PROJECT_ROOT%\src\core_app"
 set "CATALINA_HOME=%cd%\tomcat_dir\apache-tomcat-10.1.19"
@@ -601,10 +740,10 @@ echo.
 echo ═══════════════════════════════════════════════════════════
 
 :: ============================================
-:: BƯỚC 6: BUILD PROJECT
+:: BƯỚC 8: BUILD PROJECT
 :: ============================================
 echo.
-echo  [6/7] 🔨 Đang build project ^(lần đầu có thể mất 2-5 phút^)...
+echo  [8/9] 🔨 Đang build project ^(lần đầu có thể mất 2-5 phút^)...
 echo.
 
 cd /d "%PROJECT_ROOT%\src\core_app"
@@ -642,10 +781,10 @@ echo.
 echo ═══════════════════════════════════════════════════════════
 
 :: ============================================
-:: BƯỚC 7: DEPLOY & CHẠY SERVER
+:: BƯỚC 9: DEPLOY & CHẠY SERVER
 :: ============================================
 echo.
-echo  [7/7] 🚀 Đang deploy và khởi động server...
+echo  [9/9] 🚀 Đang deploy và khởi động server...
 
 :: Xóa thư mục webapps cũ để deploy sạch
 if exist "tomcat_dir\apache-tomcat-10.1.19\webapps\ROOT" (
