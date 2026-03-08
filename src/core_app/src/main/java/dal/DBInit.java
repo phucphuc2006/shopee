@@ -28,7 +28,8 @@ public class DBInit {
             stmt.executeUpdate("CREATE TABLE categories (" +
                     "id INT IDENTITY(1,1) PRIMARY KEY," +
                     "name NVARCHAR(100) NOT NULL," +
-                    "image_url NVARCHAR(255)" +
+                    "image_url NVARCHAR(255)," +
+                    "is_deleted BIT DEFAULT 0" +
                     ");");
 
             // Create Reviews
@@ -73,11 +74,34 @@ public class DBInit {
 
             // Mock Data - Users (matching actual schema: id, username, password, full_name,
             // role)
+            try {
+                stmt.executeUpdate("DROP TABLE IF EXISTS users;");
+            } catch (Exception e) {}
+            stmt.executeUpdate("CREATE TABLE users (" +
+                    "id INT IDENTITY(1,1) PRIMARY KEY," +
+                    "username NVARCHAR(50) UNIQUE NOT NULL," +
+                    "password NVARCHAR(255) NOT NULL," +
+                    "full_name NVARCHAR(100)," +
+                    "role NVARCHAR(20) DEFAULT 'CUSTOMER'," +
+                    "is_deleted BIT DEFAULT 0" +
+                    ");");
+
             stmt.executeUpdate("SET IDENTITY_INSERT users ON;");
             stmt.executeUpdate("INSERT INTO users (id, username, password, full_name, role) VALUES " +
                     "(1, 'nguyenvana', '123456', N'Nguyễn Văn A', 'CUSTOMER')," +
                     "(2, 'tranthib', '123456', N'Trần Thị B', 'CUSTOMER');");
             stmt.executeUpdate("SET IDENTITY_INSERT users OFF;");
+
+            // Create Audit Logs
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS audit_logs (" +
+                    "id INT IDENTITY(1,1) PRIMARY KEY," +
+                    "admin_id INT NOT NULL," +
+                    "action VARCHAR(50) NOT NULL," +
+                    "target_table VARCHAR(50) NOT NULL," +
+                    "target_id VARCHAR(50) NOT NULL," +
+                    "details NVARCHAR(255)," +
+                    "created_at DATETIME DEFAULT CURRENT_TIMESTAMP" +
+                    ");");
 
             // Mock Data - Reviews
             stmt.executeUpdate("SET IDENTITY_INSERT reviews ON;");
@@ -90,7 +114,6 @@ public class DBInit {
                             "(3, 2, 1, 5, N'Rất hài lòng, sẽ ủng hộ shop tiếp. Đóng gói rất chắc chắn đáng tiền mua.', '2023-10-03 09:15:00', 1);");
             stmt.executeUpdate("SET IDENTITY_INSERT reviews OFF;");
 
-            System.out.println("Database initialized successfully.");
         } catch (Exception e) {
             e.printStackTrace();
         }

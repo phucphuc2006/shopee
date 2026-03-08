@@ -27,12 +27,13 @@
                 }
 
                 .sidebar {
-                    min-height: 100vh;
+                    height: 100vh;
                     background: #ffffff;
                     width: var(--sidebar-width);
                     position: fixed;
                     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
                     z-index: 100;
+                    overflow-y: auto;
                 }
 
                 .sidebar-logo {
@@ -196,37 +197,7 @@
         <body>
 
             <!-- Sidebar -->
-            <div class="sidebar d-flex flex-column">
-                <div class="sidebar-logo">
-                    <h4><i class="fas fa-shopping-bag me-1"></i> Admin Panel</h4>
-                </div>
-                <div class="mt-4 flex-grow-1">
-                    <div class="nav-item">
-                        <a href="admin" class="active"><i class="fas fa-chart-pie"></i> Tổng Quan</a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="admin-import"><i class="fas fa-database"></i> Quản lý Dữ Liệu</a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="admin-generate"><i class="fas fa-magic"></i> Tạo Dữ Liệu</a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="admin-products"><i class="fas fa-box-open"></i> Sản Phẩm</a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="admin-orders"><i class="fas fa-clipboard-list"></i> Đơn Hàng</a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="admin-users"><i class="fas fa-users"></i> Khách Hàng</a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="home" target="_blank"><i class="fas fa-globe"></i> Truy Cập Cửa Hàng</a>
-                    </div>
-                </div>
-                <div class="nav-item mb-4 border-top pt-3">
-                    <a href="logout" class="text-danger"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a>
-                </div>
-            </div>
+            <%@ include file="admin_sidebar.jsp" %>
 
             <!-- Main Content -->
             <div class="main-content">
@@ -237,11 +208,23 @@
                         <small class="text-muted">Cập nhật số liệu theo thời gian thực</small>
                     </div>
                     <div class="d-flex align-items-center gap-3">
-                        <button class="btn btn-light rounded-circle shadow-sm position-relative">
-                            <i class="fas fa-bell"></i>
-                            <span
-                                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger rounded-circle"></span>
+                        <!-- Global Search Button -->
+                        <button class="btn btn-light rounded-circle shadow-sm" type="button" onclick="openGlobalSearch()" title="Tìm kiếm toàn cục (Ctrl+K)">
+                            <i class="fas fa-search"></i>
                         </button>
+                        <div class="dropdown">
+                            <button class="btn btn-light rounded-circle shadow-sm position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-bell"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger rounded-circle"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" style="width: 300px;">
+                                <li><h6 class="dropdown-header fw-bold text-dark">Thông Báo</h6></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-center text-muted py-3" href="#">Chưa có thông báo mới nào</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-center fw-medium text-primary" href="#">Xem tất cả</a></li>
+                            </ul>
+                        </div>
                         <div class="d-flex align-items-center gap-2 border-start ps-3">
                             <img src="https://ui-avatars.com/api/?name=Admin&background=ee4d2d&color=fff&rounded=true"
                                 width="45">
@@ -326,9 +309,9 @@
                     </div>
                 </div>
 
-                <!-- Recent Orders -->
+                <!-- Recent Orders & Top Products -->
                 <div class="row g-4 mb-4">
-                    <div class="col-12">
+                    <div class="col-xl-8 col-lg-7">
                         <div class="chart-box">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="chart-title m-0">Đơn Hàng Gần Đây</h5>
@@ -349,7 +332,7 @@
                                     <tbody>
                                         <% List<String[]> recentOrders = (List<String[]>)
                                                 request.getAttribute("recentOrders");
-                                                if(recentOrders != null) {
+                                                if(recentOrders != null && !recentOrders.isEmpty()) {
                                                 for(String[] o : recentOrders) {
                                                 String statusClass = "badge-pending";
                                                 if("COMPLETED".equals(o[3])) statusClass = "badge-completed";
@@ -376,16 +359,86 @@
                                                         <%= o[4] %>
                                                     </td>
                                                 </tr>
-                                                <% } } %>
+                                                <% } } else { %>
+                                                <tr><td colspan="5" class="text-center text-muted py-4"><i class="fas fa-inbox fa-2x mb-2 d-block"></i> Chưa có đơn hàng nào.</td></tr>
+                                                <% } %>
                                     </tbody>
                                 </table>
                             </div>
-                            <% if(recentOrders==null || recentOrders.isEmpty()) { %>
-                                <div class="text-center py-4 text-muted">
-                                    <i class="fas fa-inbox fa-2x mb-2"></i>
-                                    <p class="mb-0">Chưa có đơn hàng nào.</p>
-                                </div>
-                                <% } %>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-4 col-lg-5">
+                        <div class="chart-box">
+                            <h5 class="chart-title">Top Sản Phẩm Bán Chạy</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover border align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Tên Sản Phẩm</th>
+                                            <th width="80" class="text-end">Đã Bán</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% List<String[]> topProducts = (List<String[]>) request.getAttribute("topProducts");
+                                           if (topProducts != null && !topProducts.isEmpty()) {
+                                               for (String[] tp : topProducts) { %>
+                                        <tr>
+                                            <td class="text-truncate" style="max-width: 150px;" title="<%= tp[0] %>"><%= tp[0] %></td>
+                                            <td class="text-end fw-bold text-success"><%= tp[1] %></td>
+                                        </tr>
+                                        <% } } else { %>
+                                        <tr><td colspan="2" class="text-center text-muted">Chưa có dữ liệu</td></tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Logs -->
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <div class="chart-box">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="chart-title m-0">Nhật Ký Hoạt Động (Gần Đây)</h5>
+                                <a href="admin-logs" class="btn btn-sm btn-outline-primary">Xem tất cả <i class="fas fa-arrow-right ms-1"></i></a>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover border align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Người Thực Hiện</th>
+                                            <th>Hành Động</th>
+                                            <th>Mục Tiêu</th>
+                                            <th>Chi Tiết</th>
+                                            <th width="180">Thời Gian</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% java.util.List<model.AuditLog> recentLogs = (java.util.List<model.AuditLog>) request.getAttribute("recentLogs");
+                                           if (recentLogs != null && !recentLogs.isEmpty()) {
+                                               for (model.AuditLog log : recentLogs) {
+                                                   String actionClass = "bg-secondary";
+                                                   if ("CREATE".equals(log.getAction())) actionClass = "bg-success";
+                                                   else if ("UPDATE".equals(log.getAction())) actionClass = "bg-warning text-dark";
+                                                   else if ("DELETE".equals(log.getAction())) actionClass = "bg-danger";
+                                                   else if ("RESTORE".equals(log.getAction())) actionClass = "bg-info text-dark";
+                                        %>
+                                        <tr>
+                                            <td class="fw-medium"><i class="fas fa-user-shield text-muted me-1"></i> <%= log.getAdminName() != null ? log.getAdminName() : "Admin" %></td>
+                                            <td><span class="badge <%= actionClass %>"><%= log.getAction() %></span></td>
+                                            <td><span class="badge bg-light text-dark border"><%= log.getTargetTable() %></span> (ID: <%= log.getTargetId() %>)</td>
+                                            <td class="text-muted"><%= log.getDetails() %></td>
+                                            <td class="text-muted" style="font-size: 13px;"><i class="fas fa-clock me-1"></i> <%= new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(log.getCreatedAt()) %></td>
+                                        </tr>
+                                        <% } } else { %>
+                                        <tr><td colspan="5" class="text-center text-muted">Chưa có hoạt động nào</td></tr>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -466,6 +519,147 @@
                         cutout: '70%'
                     }
                 });
+            </script>
+
+            <!-- ============== GLOBAL SEARCH MODAL ============== -->
+            <div id="globalSearchOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; backdrop-filter:blur(4px);" onclick="closeGlobalSearch()">
+                <div style="max-width:680px; margin:80px auto; background:#fff; border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,0.3); overflow:hidden;" onclick="event.stopPropagation()">
+                    <!-- Search Input -->
+                    <div style="padding:20px 24px; border-bottom:1px solid #eee; display:flex; align-items:center; gap:12px;">
+                        <i class="fas fa-search" style="color:#aaa; font-size:18px;"></i>
+                        <input id="globalSearchInput" type="text" placeholder="Tìm kiếm sản phẩm, người dùng, đơn hàng, danh mục..."
+                            style="border:none; outline:none; width:100%; font-size:16px; background:transparent;"
+                            oninput="debounceSearch(this.value)" autocomplete="off">
+                        <kbd style="background:#f1f1f1; padding:2px 8px; border-radius:4px; font-size:12px; color:#888; border:1px solid #ddd;">ESC</kbd>
+                    </div>
+                    <!-- Results Container -->
+                    <div id="globalSearchResults" style="max-height:460px; overflow-y:auto; padding:8px 0;">
+                        <div style="text-align:center; padding:40px 20px; color:#aaa;">
+                            <i class="fas fa-search" style="font-size:40px; margin-bottom:12px; opacity:0.3;"></i>
+                            <p style="margin:0;">Nhập từ khóa để bắt đầu tìm kiếm...</p>
+                            <p style="margin:4px 0 0; font-size:13px; color:#ccc;">Tìm theo tên, email, mã đơn hàng, ID...</p>
+                        </div>
+                    </div>
+                    <!-- Footer -->
+                    <div style="padding:10px 24px; border-top:1px solid #eee; display:flex; justify-content:space-between; align-items:center; background:#fafafa;">
+                        <div style="display:flex; gap:16px; font-size:12px; color:#999;">
+                            <span><kbd style="background:#eee; padding:1px 5px; border-radius:3px; border:1px solid #ddd;">↑↓</kbd> Chọn</span>
+                            <span><kbd style="background:#eee; padding:1px 5px; border-radius:3px; border:1px solid #ddd;">Enter</kbd> Mở</span>
+                            <span><kbd style="background:#eee; padding:1px 5px; border-radius:3px; border:1px solid #ddd;">Esc</kbd> Đóng</span>
+                        </div>
+                        <span style="font-size:12px; color:#ccc;" id="globalSearchCount"></span>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            // ===== GLOBAL SEARCH LOGIC =====
+            let searchTimer = null;
+
+            function openGlobalSearch() {
+                document.getElementById('globalSearchOverlay').style.display = 'block';
+                setTimeout(() => document.getElementById('globalSearchInput').focus(), 100);
+            }
+
+            function closeGlobalSearch() {
+                document.getElementById('globalSearchOverlay').style.display = 'none';
+                document.getElementById('globalSearchInput').value = '';
+                document.getElementById('globalSearchResults').innerHTML =
+                    '<div style="text-align:center; padding:40px 20px; color:#aaa;">' +
+                    '<i class="fas fa-search" style="font-size:40px; margin-bottom:12px; opacity:0.3;"></i>' +
+                    '<p style="margin:0;">Nhập từ khóa để bắt đầu tìm kiếm...</p></div>';
+                document.getElementById('globalSearchCount').textContent = '';
+            }
+
+            function debounceSearch(query) {
+                clearTimeout(searchTimer);
+                if (query.trim().length < 2) {
+                    document.getElementById('globalSearchResults').innerHTML =
+                        '<div style="text-align:center; padding:40px 20px; color:#aaa;">' +
+                        '<i class="fas fa-search" style="font-size:40px; margin-bottom:12px; opacity:0.3;"></i>' +
+                        '<p style="margin:0;">Nhập ít nhất 2 ký tự...</p></div>';
+                    document.getElementById('globalSearchCount').textContent = '';
+                    return;
+                }
+                // Loading state
+                document.getElementById('globalSearchResults').innerHTML =
+                    '<div style="text-align:center; padding:40px 20px; color:#aaa;">' +
+                    '<i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>' +
+                    '<p style="margin:8px 0 0;">Đang tìm kiếm...</p></div>';
+
+                searchTimer = setTimeout(() => performSearch(query), 300);
+            }
+
+            function performSearch(query) {
+                fetch('admin-search?q=' + encodeURIComponent(query))
+                    .then(r => r.json())
+                    .then(data => renderResults(data))
+                    .catch(err => {
+                        document.getElementById('globalSearchResults').innerHTML =
+                            '<div style="text-align:center; padding:40px 20px; color:#f44336;">' +
+                            '<i class="fas fa-exclamation-triangle" style="font-size:24px;"></i>' +
+                            '<p style="margin:8px 0 0;">Lỗi kết nối. Thử lại sau.</p></div>';
+                    });
+            }
+
+            function renderResults(data) {
+                const r = data.results;
+                let html = '';
+                const icons = {products:'fa-box',users:'fa-users',orders:'fa-receipt',categories:'fa-tags'};
+                const labels = {products:'Sản Phẩm',users:'Người Dùng',orders:'Đơn Hàng',categories:'Danh Mục'};
+                const colors = {products:'#ee4d2d',users:'#2196f3',orders:'#4caf50',categories:'#ff9800'};
+
+                for (const [type, items] of Object.entries(r)) {
+                    if (items.length === 0) continue;
+                    html += '<div style="padding:8px 24px 4px;"><span style="font-size:11px; font-weight:700; color:' + colors[type] + '; text-transform:uppercase; letter-spacing:1px;">' +
+                        '<i class="fas ' + icons[type] + '"></i> ' + labels[type] + ' (' + items.length + ')</span></div>';
+
+                    items.forEach(item => {
+                        let subtitle = '';
+                        let title = item.name || item.customer || '#' + item.id;
+                        let icon = icons[type];
+
+                        if (type === 'products') {
+                            subtitle = 'ID: ' + item.id + ' • Giá: ' + (item.price || 'N/A') + 'đ';
+                        } else if (type === 'users') {
+                            subtitle = (item.email || '') + (item.phone ? ' • ' + item.phone : '') + ' • ' + item.role;
+                        } else if (type === 'orders') {
+                            title = 'Đơn #' + item.id + ' — ' + item.customer;
+                            subtitle = item.total + 'đ • ' + item.status + ' • ' + item.date;
+                        } else if (type === 'categories') {
+                            subtitle = 'ID: ' + item.id;
+                        }
+
+                        html += '<a href="' + item.link + '" style="display:flex; align-items:center; gap:12px; padding:10px 24px; cursor:pointer; text-decoration:none; color:inherit; transition:background 0.15s;" ' +
+                            'onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'transparent\'">' +
+                            '<div style="width:36px; height:36px; border-radius:8px; background:' + colors[type] + '15; display:flex; align-items:center; justify-content:center;">' +
+                            '<i class="fas ' + icon + '" style="color:' + colors[type] + '; font-size:14px;"></i></div>' +
+                            '<div style="flex:1; min-width:0;"><div style="font-size:14px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + title + '</div>' +
+                            '<div style="font-size:12px; color:#999; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + subtitle + '</div></div>' +
+                            '<i class="fas fa-arrow-right" style="color:#ddd; font-size:12px;"></i></a>';
+                    });
+                }
+
+                if (data.total === 0) {
+                    html = '<div style="text-align:center; padding:40px 20px; color:#aaa;">' +
+                        '<i class="fas fa-search" style="font-size:40px; margin-bottom:12px; opacity:0.3;"></i>' +
+                        '<p style="margin:0;">Không tìm thấy kết quả cho "' + data.keyword + '"</p></div>';
+                }
+
+                document.getElementById('globalSearchResults').innerHTML = html;
+                document.getElementById('globalSearchCount').textContent = data.total + ' kết quả';
+            }
+
+            // Keyboard shortcut: Ctrl+K to open
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    openGlobalSearch();
+                }
+                if (e.key === 'Escape') {
+                    closeGlobalSearch();
+                }
+            });
             </script>
         </body>
 

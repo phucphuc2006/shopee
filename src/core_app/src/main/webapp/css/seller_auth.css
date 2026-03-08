@@ -1,0 +1,673 @@
+/* ============================================= */
+/* SELLER AUTH — Login & Register Shared Styles  */
+/* Shopee Kênh Người Bán dark theme              */
+/* ============================================= */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --sa-bg: #1a1a2e;
+    --sa-bg-darker: #16162a;
+    --sa-bg-card: #282843;
+    --sa-orange: #ee4d2d;
+    --sa-orange-hover: #d9401f;
+    --sa-text: #e6e6e6;
+    --sa-text-secondary: #a0a0a8;
+    --sa-text-hint: #6c6c7a;
+    --sa-border: #3a3a52;
+    --sa-input-bg: #2d2d47;
+    --sa-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --sa-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reset */
+.sa-page {
+    margin: 0;
+    padding: 0;
+    font-family: var(--sa-font);
+    background: var(--sa-bg);
+    color: var(--sa-text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+}
+
+.sa-page *, .sa-page *::before, .sa-page *::after {
+    box-sizing: border-box;
+}
+
+/* ============================================= */
+/* HEADER                                        */
+/* ============================================= */
+.sa-header {
+    background: var(--sa-bg-darker);
+    border-bottom: 1px solid var(--sa-border);
+    padding: 0 40px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.sa-header__left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.sa-header__logo {
+    color: var(--sa-orange);
+    font-size: 22px;
+    font-weight: 700;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sa-header__logo i {
+    font-size: 24px;
+}
+
+.sa-header__title {
+    color: var(--sa-text);
+    font-size: 18px;
+    font-weight: 400;
+    margin-left: 4px;
+}
+
+.sa-header__help {
+    color: var(--sa-orange);
+    text-decoration: none;
+    font-size: 14px;
+    transition: var(--sa-transition);
+}
+
+.sa-header__help:hover {
+    opacity: 0.8;
+}
+
+/* ============================================= */
+/* MAIN CONTENT                                  */
+/* ============================================= */
+.sa-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+}
+
+.sa-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    width: 100%;
+    gap: 60px;
+}
+
+/* ============================================= */
+/* LEFT SIDE — Marketing / Illustration          */
+/* ============================================= */
+.sa-left {
+    flex: 1;
+    max-width: 500px;
+}
+
+.sa-left__subtitle {
+    color: var(--sa-orange);
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.sa-left__title {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 12px;
+    color: var(--sa-text);
+}
+
+.sa-left__desc {
+    font-size: 15px;
+    color: var(--sa-text-secondary);
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+
+/* Illustration */
+.sa-illustration {
+    width: 100%;
+    max-width: 400px;
+    height: 260px;
+    margin-top: 16px;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.sa-illustration__shop {
+    position: relative;
+    z-index: 2;
+}
+
+.sa-illustration__shop-icon {
+    font-size: 120px;
+    color: var(--sa-orange);
+    opacity: 0.15;
+}
+
+.sa-illustration__elements {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+}
+
+.sa-illustration__element {
+    font-size: 40px;
+    opacity: 0.3;
+    color: var(--sa-text-secondary);
+}
+
+/* Feature list (registration page) */
+.sa-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 32px;
+}
+
+.sa-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+    font-size: 15px;
+    color: var(--sa-text);
+    line-height: 1.5;
+}
+
+.sa-features li i {
+    font-size: 28px;
+    color: var(--sa-orange);
+    opacity: 0.7;
+    flex-shrink: 0;
+    margin-top: 2px;
+    width: 36px;
+    text-align: center;
+}
+
+/* Skyline */
+.sa-skyline {
+    width: 100%;
+    height: 80px;
+    position: relative;
+    overflow: hidden;
+    margin-top: 20px;
+    opacity: 0.15;
+}
+
+.sa-skyline::before {
+    content: '🏙️';
+    font-size: 80px;
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    filter: grayscale(1);
+}
+
+/* ============================================= */
+/* RIGHT SIDE — Form Card                        */
+/* ============================================= */
+.sa-card {
+    width: 400px;
+    flex-shrink: 0;
+    background: var(--sa-bg-card);
+    border-radius: 4px;
+    padding: 32px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, .3);
+    position: relative;
+}
+
+.sa-card__title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--sa-text);
+    margin-bottom: 24px;
+}
+
+/* QR corner */
+.sa-qr-corner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 70px;
+    height: 70px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 8px;
+    z-index: 10;
+}
+
+.sa-qr-corner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 70px;
+    height: 70px;
+    background: var(--sa-orange);
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    opacity: 0.9;
+}
+
+.sa-qr-corner i {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+    font-size: 22px;
+    margin-top: 4px;
+}
+
+.sa-qr-tooltip {
+    position: absolute;
+    top: 14px;
+    right: 80px;
+    background: rgba(40, 40, 67, 0.95);
+    border: 1px solid var(--sa-orange);
+    color: var(--sa-orange);
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+    white-space: nowrap;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.sa-qr-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -6px;
+    transform: translateY(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent transparent var(--sa-orange);
+}
+
+/* ============================================= */
+/* FORM INPUTS                                   */
+/* ============================================= */
+.sa-form-group {
+    margin-bottom: 16px;
+}
+
+.sa-input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--sa-input-bg);
+    border: 1px solid var(--sa-border);
+    border-radius: 2px;
+    color: var(--sa-text);
+    font-size: 14px;
+    font-family: var(--sa-font);
+    outline: none;
+    transition: var(--sa-transition);
+}
+
+.sa-input::placeholder {
+    color: var(--sa-text-hint);
+}
+
+.sa-input:focus {
+    border-color: var(--sa-orange);
+    box-shadow: 0 0 0 2px rgba(238, 77, 45, .15);
+}
+
+.sa-input--error {
+    border-color: #ff424f !important;
+}
+
+.sa-input-wrap {
+    position: relative;
+}
+
+.sa-input-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--sa-text-hint);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    transition: var(--sa-transition);
+}
+
+.sa-input-toggle:hover {
+    color: var(--sa-text-secondary);
+}
+
+.sa-error-msg {
+    color: #ff424f;
+    font-size: 12px;
+    margin-top: 6px;
+    display: none;
+}
+
+.sa-error-msg--show {
+    display: block;
+    animation: saFadeIn 0.2s ease;
+}
+
+/* ============================================= */
+/* BUTTONS                                       */
+/* ============================================= */
+.sa-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 2px;
+    font-family: var(--sa-font);
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: var(--sa-transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.sa-btn--primary {
+    background: var(--sa-orange);
+    color: #fff;
+}
+
+.sa-btn--primary:hover {
+    background: var(--sa-orange-hover);
+    box-shadow: 0 4px 12px rgba(238, 77, 45, .35);
+}
+
+.sa-btn--primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Spinner */
+.sa-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: saSpin 0.6s linear infinite;
+}
+
+/* ============================================= */
+/* LINKS                                         */
+/* ============================================= */
+.sa-forgot {
+    display: block;
+    color: var(--sa-orange);
+    font-size: 13px;
+    text-decoration: none;
+    margin-top: 12px;
+    transition: var(--sa-transition);
+}
+
+.sa-forgot:hover {
+    opacity: 0.8;
+}
+
+/* ============================================= */
+/* SEPARATOR                                     */
+/* ============================================= */
+.sa-separator {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+    color: var(--sa-text-hint);
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.sa-separator::before,
+.sa-separator::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--sa-border);
+}
+
+.sa-separator span {
+    padding: 0 14px;
+}
+
+/* ============================================= */
+/* SOCIAL LOGIN                                  */
+/* ============================================= */
+.sa-social-btns {
+    display: flex;
+    gap: 12px;
+}
+
+.sa-social-btn {
+    flex: 1;
+    height: 42px;
+    border: 1px solid var(--sa-border);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-family: var(--sa-font);
+    text-decoration: none;
+    color: var(--sa-text);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: var(--sa-transition);
+}
+
+.sa-social-btn:hover {
+    border-color: var(--sa-text-secondary);
+    background: rgba(255,255,255,.03);
+}
+
+.sa-social-btn .fa-facebook {
+    color: #1877f2;
+    font-size: 18px;
+}
+
+.sa-social-btn .sa-google-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* ============================================= */
+/* SWITCH LINK (Login ↔ Register)                */
+/* ============================================= */
+.sa-switch {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--sa-text-secondary);
+}
+
+.sa-switch a {
+    color: var(--sa-orange);
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.sa-switch a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================= */
+/* ACCOUNT TYPE LINK                             */
+/* ============================================= */
+.sa-account-type {
+    display: block;
+    text-align: center;
+    margin-top: 16px;
+    padding: 12px;
+    border: 1px solid var(--sa-border);
+    border-radius: 2px;
+    color: var(--sa-text-secondary);
+    font-size: 13px;
+    text-decoration: none;
+    transition: var(--sa-transition);
+}
+
+.sa-account-type:hover {
+    border-color: var(--sa-text-secondary);
+    color: var(--sa-text);
+}
+
+.sa-account-type i {
+    margin-left: 6px;
+}
+
+/* ============================================= */
+/* POLICY TEXT                                   */
+/* ============================================= */
+.sa-policy {
+    font-size: 12px;
+    color: var(--sa-text-hint);
+    text-align: center;
+    margin-top: 16px;
+    line-height: 1.6;
+}
+
+.sa-policy a {
+    color: var(--sa-orange);
+    text-decoration: none;
+}
+
+.sa-policy a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================= */
+/* FOOTER                                        */
+/* ============================================= */
+.sa-footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--sa-text-hint);
+    font-size: 12px;
+    flex-shrink: 0;
+    border-top: 1px solid var(--sa-border);
+}
+
+/* ============================================= */
+/* ALERT                                         */
+/* ============================================= */
+.sa-alert {
+    padding: 10px 14px;
+    border-radius: 2px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sa-alert--error {
+    background: rgba(255, 66, 79, .1);
+    border: 1px solid rgba(255, 66, 79, .3);
+    color: #ff424f;
+}
+
+.sa-alert--success {
+    background: rgba(45, 194, 88, .1);
+    border: 1px solid rgba(45, 194, 88, .3);
+    color: #2dc258;
+}
+
+/* ============================================= */
+/* ANIMATIONS                                    */
+/* ============================================= */
+@keyframes saFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes saSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================= */
+/* RESPONSIVE                                    */
+/* ============================================= */
+@media (max-width: 900px) {
+    .sa-container {
+        flex-direction: column;
+        gap: 32px;
+    }
+
+    .sa-left {
+        max-width: 100%;
+        text-align: center;
+    }
+
+    .sa-left__title {
+        font-size: 26px;
+    }
+
+    .sa-illustration {
+        display: none;
+    }
+
+    .sa-card {
+        width: 100%;
+        max-width: 420px;
+    }
+}
+
+@media (max-width: 500px) {
+    .sa-header {
+        padding: 0 16px;
+    }
+
+    .sa-header__title {
+        font-size: 15px;
+    }
+
+    .sa-main {
+        padding: 24px 12px;
+    }
+
+    .sa-card {
+        padding: 24px 20px;
+    }
+
+    .sa-left__title {
+        font-size: 22px;
+    }
+
+    .sa-features li {
+        font-size: 14px;
+    }
+}

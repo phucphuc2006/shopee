@@ -30,6 +30,14 @@ public class AdminImportServlet extends HttpServlet {
             // Gửi log kết quả về lại trang JSP
             request.setAttribute("logs", logs);
 
+            // Ghi nhật ký hệ thống
+            jakarta.servlet.http.HttpSession session = request.getSession();
+            model.User admin = (model.User) session.getAttribute("account");
+            int adminId = (admin != null) ? admin.getId() : 1;
+            
+            dal.AuditLogDAO audit = new dal.AuditLogDAO();
+            audit.insertLog(adminId, "CREATE", "multiple_tables", "-", "Chạy tiến trình Import/Migration dữ liệu mẫu");
+
         } catch (Exception e) {
             request.setAttribute("logs", "Lỗi Fatal: " + e.getMessage());
             e.printStackTrace();

@@ -276,10 +276,10 @@
                                             <nav class="header__navbar">
                                                 <ul class="header__navbar-list">
                                                     <li class="header__navbar-item header__navbar-item--separate"><a
-                                                            href="#" class="header__navbar-item-link">Kênh Người Bán</a>
+                                                            href="seller-onboarding" class="header__navbar-item-link">Kênh Người Bán</a>
                                                     </li>
                                                     <li class="header__navbar-item header__navbar-item--separate"><a
-                                                            href="#" class="header__navbar-item-link">Trở thành Người
+                                                            href="seller-login" class="header__navbar-item-link">Trở thành Người
                                                             bán
                                                             Shopee</a>
                                                     </li>
@@ -302,7 +302,21 @@
                                                             báo</a></li>
                                                     <li class="header__navbar-item"><a href="#"
                                                             class="header__navbar-item-link"><i
-                                                                class="far fa-question-circle"></i> Hỗ trợ</a></li>
+                                                                class="far fa-question-circle"></i> Hỗ Trợ</a></li>
+                                                    <li class="header__navbar-item">
+                                                        <div class="lang-dropdown-wrapper">
+                                                            <div class="lang-dropdown-trigger" id="langDropdownTrigger">
+                                                                <i class="fas fa-globe"></i>
+                                                                <span id="currentLangLabel">Tiếng Việt</span>
+                                                                <i class="fas fa-chevron-down lang-dropdown-arrow"></i>
+                                                            </div>
+                                                            <div class="lang-dropdown-menu" id="langDropdownMenu">
+                                                                <a href="#" class="lang-dropdown-item active" data-lang="vi" onclick="switchLang('vi', 'Tiếng Việt', event)">Tiếng Việt</a>
+                                                                <a href="#" class="lang-dropdown-item" data-lang="en" onclick="switchLang('en', 'English', event)">English</a>
+                                                                <a href="#" class="lang-dropdown-item" data-lang="km" onclick="switchLang('km', 'ខ្មែរ', event)">ខ្មែរ</a>
+                                                            </div>
+                                                        </div>
+                                                    </li>
                                                     <% User acc=(User) session.getAttribute("account"); if (acc !=null)
                                                         { %>
                                                         <li class="header__navbar-item header__navbar-item--separate"
@@ -411,12 +425,12 @@
 
                                                             <div class="filter-group">
                                                                 <div class="filter-group-header">Theo Danh Mục</div>
-                                                                <!-- List categories (nếu có map được) hoặc mock -->
                                                                 <c:choose>
                                                                     <c:when test="${not empty categories}">
                                                                         <c:forEach var="c" items="${categories}"
-                                                                            begin="0" end="4">
-                                                                            <label class="filter-item">
+                                                                            varStatus="status">
+                                                                            <label class="filter-item ${status.index >= 5 ? 'extra-cate' : ''}"
+                                                                                style="${status.index >= 5 ? 'display:none;' : ''}">
                                                                                 <input type="checkbox" name="cateId"
                                                                                     value="${c.id}"
                                                                                     class="filter-checkbox"
@@ -428,58 +442,50 @@
                                                                         </c:forEach>
                                                                     </c:when>
                                                                     <c:otherwise>
-                                                                        <label class="filter-item"><input
-                                                                                type="checkbox" name="cateId" value="1"
-                                                                                class="filter-checkbox">
-                                                                            Thời Trang Nam</label>
-                                                                        <label class="filter-item"><input
-                                                                                type="checkbox" name="cateId" value="2"
-                                                                                class="filter-checkbox">
-                                                                            Điện Thoại & Phụ Kiện</label>
-                                                                        <label class="filter-item"><input
-                                                                                type="checkbox" name="cateId" value="3"
-                                                                                class="filter-checkbox">
-                                                                            Thiết Bị Điện Tử</label>
-                                                                        <label class="filter-item"><input
-                                                                                type="checkbox" name="cateId" value="4"
-                                                                                class="filter-checkbox">
-                                                                            Máy Tính & Laptop</label>
+                                                                        <div style="color: #999; font-size: 13px;">Không có danh mục phù hợp</div>
                                                                     </c:otherwise>
                                                                 </c:choose>
-                                                                <div
-                                                                    style="color: #ee4d2d; font-size: 14px; cursor: pointer; margin-top: 5px;">
-                                                                    Thêm <i class="fas fa-chevron-down"
-                                                                        style="font-size: 10px;"></i>
-                                                                </div>
+                                                                <c:if test="${fn:length(categories) > 5}">
+                                                                    <div id="toggleCateBtn"
+                                                                        style="color: #ee4d2d; font-size: 14px; cursor: pointer; margin-top: 5px;"
+                                                                        onclick="toggleCategories()">
+                                                                        Thêm <i class="fas fa-chevron-down"
+                                                                            style="font-size: 10px;"></i>
+                                                                    </div>
+                                                                </c:if>
                                                             </div>
 
                                                             <div class="filter-group">
                                                                 <div class="filter-group-header">Nơi Bán</div>
-                                                                <label class="filter-item"><input type="checkbox"
-                                                                        name="location" value="hcm"
-                                                                        class="filter-checkbox" ${paramValues.location
-                                                                        !=null &&
-                                                                        fn:contains(fn:join(paramValues.location, ','
-                                                                        ), 'hcm' ) ? 'checked' : '' }>
-                                                                    TP. Hồ Chí Minh</label>
-                                                                <label class="filter-item"><input type="checkbox"
-                                                                        name="location" value="hn"
-                                                                        class="filter-checkbox" ${paramValues.location
-                                                                        !=null &&
-                                                                        fn:contains(fn:join(paramValues.location, ','
-                                                                        ), 'hn' ) ? 'checked' : '' }>
-                                                                    Hà Nội</label>
-                                                                <label class="filter-item"><input type="checkbox"
-                                                                        name="location" value="dn"
-                                                                        class="filter-checkbox" ${paramValues.location
-                                                                        !=null &&
-                                                                        fn:contains(fn:join(paramValues.location, ','
-                                                                        ), 'dn' ) ? 'checked' : '' }>
-                                                                    Đà Nẵng</label>
-                                                                <div
-                                                                    style="color: #ee4d2d; font-size: 14px; cursor: pointer; margin-top: 5px;">
-                                                                    Thêm <i class="fas fa-chevron-down"
-                                                                        style="font-size: 10px;"></i>
+                                                                <%-- 5 tỉnh mặc định hiển thị --%>
+                                                                <label class="filter-item"><input type="checkbox" name="location" value="Hà Nội" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Hà Nội') ? 'checked' : '' }> Hà Nội</label>
+                                                                <label class="filter-item"><input type="checkbox" name="location" value="Hồ Chí Minh" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Hồ Chí Minh') ? 'checked' : '' }> TP. Hồ Chí Minh</label>
+                                                                <label class="filter-item"><input type="checkbox" name="location" value="Bình Dương" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Bình Dương') ? 'checked' : '' }> Bình Dương</label>
+                                                                <label class="filter-item"><input type="checkbox" name="location" value="Đồng Nai" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Đồng Nai') ? 'checked' : '' }> Đồng Nai</label>
+                                                                <label class="filter-item"><input type="checkbox" name="location" value="Hải Phòng" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Hải Phòng') ? 'checked' : '' }> Hải Phòng</label>
+                                                                <%-- Ẩn mặc định, hiện khi nhấn Thêm --%>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Đà Nẵng" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Đà Nẵng') ? 'checked' : '' }> Đà Nẵng</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Thái Nguyên" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Thái Nguyên') ? 'checked' : '' }> Thái Nguyên</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Hưng Yên" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Hưng Yên') ? 'checked' : '' }> Hưng Yên</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Vĩnh Phúc" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Vĩnh Phúc') ? 'checked' : '' }> Vĩnh Phúc</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Bắc Ninh" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Bắc Ninh') ? 'checked' : '' }> Bắc Ninh</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Quảng Ninh" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Quảng Ninh') ? 'checked' : '' }> Quảng Ninh</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Hải Dương" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Hải Dương') ? 'checked' : '' }> Hải Dương</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Nam Định" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Nam Định') ? 'checked' : '' }> Nam Định</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Cần Thơ" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Cần Thơ') ? 'checked' : '' }> Cần Thơ</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Phú Thọ" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Phú Thọ') ? 'checked' : '' }> Phú Thọ</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Bà Rịa" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Bà Rịa') ? 'checked' : '' }> Bà Rịa - Vũng Tàu</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Đắk Lắk" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Đắk Lắk') ? 'checked' : '' }> Đắk Lắk</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Thanh Hóa" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Thanh Hóa') ? 'checked' : '' }> Thanh Hóa</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Thái Bình" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Thái Bình') ? 'checked' : '' }> Thái Bình</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Nghệ An" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Nghệ An') ? 'checked' : '' }> Nghệ An</label>
+                                                                <label class="filter-item extra-loc" style="display:none;"><input type="checkbox" name="location" value="Long An" class="filter-checkbox" ${paramValues.location !=null && fn:contains(fn:join(paramValues.location, '|||'), 'Long An') ? 'checked' : '' }> Long An</label>
+
+                                                                <div class="extra-loc" style="display:none; align-items:center; gap:4px; color: rgba(0,0,0,.54); font-size: 14px; cursor: pointer; margin-top: 8px;" onclick="openLocationModal()">
+                                                                    Khác <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+                                                                </div>
+                                                                <div id="toggleLocBtn" style="color: #ee4d2d; font-size: 14px; cursor: pointer; margin-top: 5px;" onclick="toggleLocations()">
+                                                                    Thêm <i class="fas fa-chevron-down" style="font-size: 10px;"></i>
                                                                 </div>
                                                             </div>
 
@@ -505,9 +511,9 @@
                                                                 <input type="hidden" name="rating" id="ratingInput"
                                                                     value="${param.rating}">
 
-                                                                <div class="filter-item cursor-pointer"
+                                                                <div class="filter-item cursor-pointer rating-item"
                                                                     style="display: flex; align-items: center; gap: 5px; cursor: pointer; ${param.rating == '5' ? 'background: #fdf3f0; border-radius: 100px; padding: 5px 10px;' : 'padding: 5px 10px;'}"
-                                                                    onclick="document.getElementById('ratingInput').value='5';">
+                                                                    onclick="selectRating('5', this)">
                                                                     <i class="fas fa-star" style="color:#ffce3d;"></i>
                                                                     <i class="fas fa-star" style="color:#ffce3d;"></i>
                                                                     <i class="fas fa-star" style="color:#ffce3d;"></i>
@@ -515,9 +521,9 @@
                                                                     <i class="fas fa-star" style="color:#ffce3d;"></i>
                                                                 </div>
 
-                                                                <div class="filter-item cursor-pointer"
+                                                                <div class="filter-item cursor-pointer rating-item"
                                                                     style="display: flex; align-items: center; gap: 5px; cursor: pointer; ${param.rating == '4' ? 'background: #fdf3f0; border-radius: 100px; padding: 5px 10px;' : 'padding: 5px 10px;'}"
-                                                                    onclick="document.getElementById('ratingInput').value='4';">
+                                                                    onclick="selectRating('4', this)">
                                                                     <i class="fas fa-star" style="color:#ffce3d;"></i>
                                                                     <i class="fas fa-star" style="color:#ffce3d;"></i>
                                                                     <i class="fas fa-star" style="color:#ffce3d;"></i>
@@ -526,17 +532,52 @@
                                                                     <span>trở lên</span>
                                                                 </div>
 
-                                                                <div class="filter-item cursor-pointer"
+                                                                <div class="filter-item cursor-pointer rating-item"
                                                                     style="display: flex; align-items: center; gap: 5px; cursor: pointer; ${param.rating == '3' ? 'background: #fdf3f0; border-radius: 100px; padding: 5px 10px;' : 'padding: 5px 10px;'}"
-                                                                    onclick="document.getElementById('ratingInput').value='3';">
+                                                                    onclick="selectRating('3', this)">
                                                                     <i class="fas fa-star" style="color:#ffce3d;"></i>
                                                                     <i class="fas fa-star" style="color:#ffce3d;"></i>
                                                                     <i class="fas fa-star" style="color:#ffce3d;"></i>
+                                                                    <i class="far fa-star" style="color:#ccc;"></i>
+                                                                    <i class="far fa-star" style="color:#ccc;"></i>
+                                                                    <span>trở lên</span>
+                                                                </div>
+
+                                                                <div class="filter-item cursor-pointer rating-item"
+                                                                    style="display: flex; align-items: center; gap: 5px; cursor: pointer; ${param.rating == '2' ? 'background: #fdf3f0; border-radius: 100px; padding: 5px 10px;' : 'padding: 5px 10px;'}"
+                                                                    onclick="selectRating('2', this)">
+                                                                    <i class="fas fa-star" style="color:#ffce3d;"></i>
+                                                                    <i class="fas fa-star" style="color:#ffce3d;"></i>
+                                                                    <i class="far fa-star" style="color:#ccc;"></i>
+                                                                    <i class="far fa-star" style="color:#ccc;"></i>
+                                                                    <i class="far fa-star" style="color:#ccc;"></i>
+                                                                    <span>trở lên</span>
+                                                                </div>
+
+                                                                <div class="filter-item cursor-pointer rating-item"
+                                                                    style="display: flex; align-items: center; gap: 5px; cursor: pointer; ${param.rating == '1' ? 'background: #fdf3f0; border-radius: 100px; padding: 5px 10px;' : 'padding: 5px 10px;'}"
+                                                                    onclick="selectRating('1', this)">
+                                                                    <i class="fas fa-star" style="color:#ffce3d;"></i>
+                                                                    <i class="far fa-star" style="color:#ccc;"></i>
+                                                                    <i class="far fa-star" style="color:#ccc;"></i>
                                                                     <i class="far fa-star" style="color:#ccc;"></i>
                                                                     <i class="far fa-star" style="color:#ccc;"></i>
                                                                     <span>trở lên</span>
                                                                 </div>
                                                             </div>
+
+                                                            <script>
+                                                                function selectRating(val, elem) {
+                                                                    document.getElementById('ratingInput').value = val;
+                                                                    let items = document.querySelectorAll('.rating-item');
+                                                                    items.forEach(item => {
+                                                                        item.style.background = 'transparent';
+                                                                        item.style.padding = '5px 10px';
+                                                                    });
+                                                                    elem.style.background = '#fdf3f0';
+                                                                    elem.style.borderRadius = '100px';
+                                                                }
+                                                            </script>
 
                                                             <% String clearTxt=(String) request.getAttribute("txtS"); if
                                                                 (clearTxt==null) clearTxt="" ; %>
@@ -673,36 +714,31 @@ String dps = !isP?"selected":"";
 
                                                                             <div class="home-product-item__action">
                                                                                 <span class="home-product-item__rating">
-                                                                                    <i
-                                                                                        class="home-product-item__star--gold fas fa-star"></i>
-                                                                                    <i
-                                                                                        class="home-product-item__star--gold fas fa-star"></i>
-                                                                                    <i
-                                                                                        class="home-product-item__star--gold fas fa-star"></i>
-                                                                                    <i
-                                                                                        class="home-product-item__star--gold fas fa-star"></i>
-                                                                                    <i
-                                                                                        class="home-product-item__star--gold fas fa-star"></i>
+                                                                                    <% 
+                                                                                        int rating = (int) Math.round(p.getRating());
+                                                                                        for (int i = 1; i <= 5; i++) {
+                                                                                            if (i <= rating) {
+                                                                                    %>
+                                                                                    <i class="home-product-item__star--gold fas fa-star"></i>
+                                                                                    <%      } else { %>
+                                                                                    <i class="far fa-star" style="color: #ccc;"></i>
+                                                                                    <%      }
+                                                                                        } 
+                                                                                    %>
                                                                                 </span>
-                                                                                <span class="home-product-item__sold">Đã
-                                                                                    bán
-                                                                                    ${(p.id
-                                                                                    * 10) + 5}</span>
+                                                                                <span class="home-product-item__sold">Đã bán <%
+                                                                                    int sc2 = p.getSoldCount();
+                                                                                    if (sc2 >= 1000000) {
+                                                                                        out.print(String.format("%.1ftr", sc2 / 1000000.0));
+                                                                                    } else if (sc2 >= 1000) {
+                                                                                        out.print(String.format("%.1fk", sc2 / 1000.0));
+                                                                                    } else {
+                                                                                        out.print(sc2);
+                                                                                    }
+                                                                                %></span>
                                                                             </div>
-
                                                                             <div class="home-product-item__origin">
-                                                                                <span>
-                                                                                    <c:choose>
-                                                                                        <c:when test="${p.id % 3 == 0}">
-                                                                                            Đà Nẵng
-                                                                                        </c:when>
-                                                                                        <c:when test="${p.id % 2 == 0}">
-                                                                                            Hà Nội
-                                                                                        </c:when>
-                                                                                        <c:otherwise>TP. Hồ Chí Minh
-                                                                                        </c:otherwise>
-                                                                                    </c:choose>
-                                                                                </span>
+                                                                                <span><%= p.getLocation() != null ? p.getLocation() : "Hà Nội" %></span>
                                                                             </div>
 
                                                                             <%-- Gắn nhãn Yêu Thích <div
@@ -879,6 +915,213 @@ String dps = !isP?"selected":"";
                                     </footer>
 
                                     </div>
+
+                                    <script>
+                                        function toggleCategories() {
+                                            var extras = document.querySelectorAll('.extra-cate');
+                                            var btn = document.getElementById('toggleCateBtn');
+                                            var isHidden = extras[0] && extras[0].style.display === 'none';
+                                            extras.forEach(function(el) {
+                                                el.style.display = isHidden ? 'flex' : 'none';
+                                            });
+                                            btn.innerHTML = isHidden 
+                                                ? 'Ẩn bớt <i class="fas fa-chevron-up" style="font-size:10px;"></i>'
+                                                : 'Thêm <i class="fas fa-chevron-down" style="font-size:10px;"></i>';
+                                        }
+
+                                        function toggleLocations() {
+                                            var extras = document.querySelectorAll('.extra-loc');
+                                            var btn = document.getElementById('toggleLocBtn');
+                                            var isHidden = extras[0] && extras[0].style.display === 'none';
+                                            extras.forEach(function(el) {
+                                                el.style.display = isHidden ? 'flex' : 'none';
+                                            });
+                                            btn.innerHTML = isHidden 
+                                                ? 'Thu gọn <i class="fas fa-chevron-up" style="font-size:10px;"></i>'
+                                                : 'Thêm <i class="fas fa-chevron-down" style="font-size:10px;"></i>';
+                                        }
+
+                                        /* ========== LOCATION MODAL ========== */
+                                        var allProvinces = {
+                                            'A': ['An Giang'],
+                                            'B': ['Bà Rịa - Vũng Tàu','Bắc Giang','Bắc Kạn','Bạc Liêu','Bắc Ninh','Bến Tre','Bình Định','Bình Dương','Bình Phước','Bình Thuận'],
+                                            'C': ['Cao Bằng','Cà Mau','Cần Thơ'],
+                                            'Đ': ['Đà Nẵng','Đắk Lắk','Đắk Nông','Điện Biên','Đồng Nai','Đồng Tháp'],
+                                            'G': ['Gia Lai'],
+                                            'H': ['Hà Giang','Hà Nam','Hà Nội','Hà Tĩnh','Hải Dương','Hải Phòng','Hậu Giang','Hòa Bình','Hưng Yên'],
+                                            'K': ['Khánh Hòa','Kiên Giang','Kon Tum'],
+                                            'L': ['Lai Châu','Lâm Đồng','Lạng Sơn','Lào Cai','Long An'],
+                                            'N': ['Nam Định','Nghệ An','Ninh Bình','Ninh Thuận'],
+                                            'P': ['Phú Thọ','Phú Yên'],
+                                            'Q': ['Quảng Bình','Quảng Nam','Quảng Ngãi','Quảng Ninh','Quảng Trị'],
+                                            'S': ['Sóc Trăng','Sơn La'],
+                                            'T': ['Tây Ninh','Thái Bình','Thái Nguyên','Thanh Hóa','Thừa Thiên Huế','Tiền Giang','TP. Hồ Chí Minh','Trà Vinh','Tuyên Quang'],
+                                            'V': ['Vĩnh Long','Vĩnh Phúc'],
+                                            'Y': ['Yên Bái']
+                                        };
+
+                                        var modalSelectedLocations = new Set();
+
+                                        function openLocationModal() {
+                                            // Sync sidebar checked locations into modal
+                                            modalSelectedLocations.clear();
+                                            document.querySelectorAll('#filterForm input[name="location"]:checked').forEach(function(cb) {
+                                                modalSelectedLocations.add(cb.value);
+                                            });
+                                            renderModalProvinces('');
+                                            document.getElementById('locModalOverlay').style.display = 'flex';
+                                            document.body.style.overflow = 'hidden';
+                                        }
+
+                                        function closeLocationModal() {
+                                            document.getElementById('locModalOverlay').style.display = 'none';
+                                            document.body.style.overflow = '';
+                                        }
+
+                                        function renderModalProvinces(filter) {
+                                            var html = '';
+                                            var letters = Object.keys(allProvinces);
+                                            filter = filter.toLowerCase();
+                                            letters.forEach(function(letter) {
+                                                var provinces = allProvinces[letter].filter(function(p) {
+                                                    return filter === '' || p.toLowerCase().indexOf(filter) >= 0;
+                                                });
+                                                if (provinces.length === 0) return;
+                                                html += '<div id="loc-letter-' + letter + '" style="margin-bottom:5px;">';
+                                                html += '<div style="font-weight:600;font-size:14px;color:rgba(0,0,0,.65);padding:8px 0;border-bottom:1px solid #f0f0f0;">' + letter + '</div>';
+                                                html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;">';
+                                                provinces.forEach(function(p) {
+                                                    var checked = modalSelectedLocations.has(p) ? 'checked' : '';
+                                                    html += '<label style="display:flex;align-items:center;padding:10px 5px;font-size:13px;color:rgba(0,0,0,.8);cursor:pointer;">';
+                                                    html += '<input type="checkbox" class="modal-loc-cb" value="' + p + '" ' + checked + ' style="margin-right:8px;width:14px;height:14px;"> ' + p;
+                                                    html += '</label>';
+                                                });
+                                                html += '</div></div>';
+                                            });
+                                            if (html === '') {
+                                                html = '<div style="text-align:center;padding:40px;color:#999;">Không tìm thấy tỉnh/thành phố nào</div>';
+                                            }
+                                            document.getElementById('locModalBody').innerHTML = html;
+                                            // Re-bind checkboxes
+                                            document.querySelectorAll('.modal-loc-cb').forEach(function(cb) {
+                                                cb.addEventListener('change', function() {
+                                                    if (this.checked) modalSelectedLocations.add(this.value);
+                                                    else modalSelectedLocations.delete(this.value);
+                                                });
+                                            });
+                                        }
+
+                                        function scrollToLetter(letter) {
+                                            var el = document.getElementById('loc-letter-' + letter);
+                                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        }
+
+                                        function resetModalLocations() {
+                                            modalSelectedLocations.clear();
+                                            document.querySelectorAll('.modal-loc-cb').forEach(function(cb) {
+                                                cb.checked = false;
+                                            });
+                                        }
+
+                                        function confirmModalLocations() {
+                                            // Uncheck all sidebar location checkboxes first
+                                            document.querySelectorAll('#filterForm input[name="location"]').forEach(function(cb) {
+                                                cb.checked = false;
+                                            });
+                                            // Check the ones selected in modal (if they exist in sidebar)
+                                            modalSelectedLocations.forEach(function(loc) {
+                                                var existing = document.querySelector('#filterForm input[name="location"][value="' + loc + '"]');
+                                                if (existing) {
+                                                    existing.checked = true;
+                                                } else {
+                                                    // Add hidden input for locations not in sidebar
+                                                    var hidden = document.createElement('input');
+                                                    hidden.type = 'hidden';
+                                                    hidden.name = 'location';
+                                                    hidden.value = loc;
+                                                    hidden.className = 'modal-added-loc';
+                                                    document.getElementById('filterForm').appendChild(hidden);
+                                                }
+                                            });
+                                            // Remove old hidden inputs that are no longer selected
+                                            document.querySelectorAll('.modal-added-loc').forEach(function(h) {
+                                                if (!modalSelectedLocations.has(h.value)) h.remove();
+                                            });
+                                            closeLocationModal();
+                                            // Submit form to apply location filter
+                                            document.getElementById('filterForm').submit();
+                                        }
+                                    </script>
+
+                                    <!-- LOCATION MODAL OVERLAY -->
+                                    <div id="locModalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.5); z-index:9999; justify-content:center; align-items:center;">
+                                        <div style="background:#fff; width:750px; max-width:95vw; max-height:85vh; border-radius:4px; display:flex; flex-direction:column; box-shadow:0 4px 20px rgba(0,0,0,.2); overflow:hidden;">
+                                            <!-- Header -->
+                                            <div style="display:flex; align-items:center; padding:18px 24px; border-bottom:1px solid #f0f0f0; gap:20px; flex-shrink:0;">
+                                                <span style="font-size:16px; font-weight:600; color:rgba(0,0,0,.8); white-space:nowrap;">Tỉnh / Thành phố</span>
+                                                <div style="flex:1; position:relative;">
+                                                    <input type="text" id="locModalSearch" placeholder="Bạn muốn mua hàng từ Tỉnh / Thành phố nào?" 
+                                                        oninput="renderModalProvinces(this.value)"
+                                                        style="width:100%; padding:8px 35px 8px 12px; border:1px solid #e0e0e0; border-radius:2px; font-size:14px; outline:none; box-sizing:border-box;">
+                                                    <i class="fas fa-search" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:#999; font-size:14px;"></i>
+                                                </div>
+                                                <span onclick="closeLocationModal()" style="cursor:pointer; font-size:20px; color:#999; padding:0 5px;">&times;</span>
+                                            </div>
+                                            <!-- Body -->
+                                            <div style="display:flex; flex:1; overflow:hidden;">
+                                                <div id="locModalBody" style="flex:1; overflow-y:auto; padding:10px 24px;"></div>
+                                                <!-- Alphabet Nav -->
+                                                <div style="display:flex; flex-direction:column; align-items:center; padding:8px 6px; border-left:1px solid #f0f0f0; overflow-y:auto; flex-shrink:0;">
+                                                    <span onclick="scrollToLetter('A')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">A</span>
+                                                    <span onclick="scrollToLetter('B')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">B</span>
+                                                    <span onclick="scrollToLetter('C')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">C</span>
+                                                    <span onclick="scrollToLetter('Đ')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">Đ</span>
+                                                    <span onclick="scrollToLetter('G')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">G</span>
+                                                    <span onclick="scrollToLetter('H')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">H</span>
+                                                    <span onclick="scrollToLetter('K')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">K</span>
+                                                    <span onclick="scrollToLetter('L')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">L</span>
+                                                    <span onclick="scrollToLetter('N')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">N</span>
+                                                    <span onclick="scrollToLetter('P')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">P</span>
+                                                    <span onclick="scrollToLetter('Q')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">Q</span>
+                                                    <span onclick="scrollToLetter('S')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">S</span>
+                                                    <span onclick="scrollToLetter('T')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">T</span>
+                                                    <span onclick="scrollToLetter('V')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">V</span>
+                                                    <span onclick="scrollToLetter('Y')" style="cursor:pointer; font-size:12px; color:#ee4d2d; padding:3px 4px;">Y</span>
+                                                </div>
+                                            </div>
+                                            <!-- Footer -->
+                                            <div style="display:flex; justify-content:flex-end; align-items:center; padding:14px 24px; border-top:1px solid #f0f0f0; gap:15px; flex-shrink:0;">
+                                                <span onclick="resetModalLocations()" style="cursor:pointer; font-size:14px; color:rgba(0,0,0,.54); text-transform:uppercase; letter-spacing:0.5px;">Thiết lập lại</span>
+                                                <button onclick="confirmModalLocations()" style="background:#ee4d2d; color:#fff; border:none; padding:10px 40px; border-radius:2px; font-size:14px; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px;">Xác nhận</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <script>
+                                        // Language Switcher
+                                        function switchLang(langCode, langLabel, event) {
+                                            event.preventDefault();
+                                            document.getElementById('currentLangLabel').textContent = langLabel;
+                                            document.querySelectorAll('.lang-dropdown-item').forEach(function(item) {
+                                                item.classList.remove('active');
+                                            });
+                                            event.target.classList.add('active');
+                                            localStorage.setItem('shopee_lang', langCode);
+                                        }
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            var savedLang = localStorage.getItem('shopee_lang');
+                                            if (savedLang) {
+                                                var langItem = document.querySelector('.lang-dropdown-item[data-lang="' + savedLang + '"]');
+                                                if (langItem) {
+                                                    document.getElementById('currentLangLabel').textContent = langItem.textContent;
+                                                    document.querySelectorAll('.lang-dropdown-item').forEach(function(item) {
+                                                        item.classList.remove('active');
+                                                    });
+                                                    langItem.classList.add('active');
+                                                }
+                                            }
+                                        });
+                                    </script>
                                 </body>
 
                                 </html>

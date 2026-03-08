@@ -1,24 +1,24 @@
 package dal;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
 public class DBContext {
     private static final String DEFAULT_URL = "jdbc:sqlserver://localhost\\SQLEXPRESS;databaseName=shopeeweb_lab211;encrypt=true;trustServerCertificate=true;";
     private static final String DEFAULT_USER = "sa";
-    private static final String DEFAULT_PASS = "zxczxc123"; // <-- Mật khẩu mặc định, ưu tiên đọc từ db.properties
+    private static final String DEFAULT_PASS = "zxczxc123";
 
-    private static String DB_URL;
-    private static String USER;
-    private static String PASS;
+    // ===== HikariCP Connection Pool (Singleton) =====
+    private static final HikariDataSource dataSource;
 
     static {
-        // Đọc cấu hình từ db.properties (nếu có)
         Properties props = new Properties();
         boolean loaded = false;
 
@@ -28,11 +28,9 @@ public class DBContext {
                 props.load(is);
                 loaded = true;
             }
-        } catch (Exception e) {
-            // ignore
-        }
+        } catch (Exception e) { /* ignore */ }
 
-        // Thử 2: Đọc từ file db.properties ở thư mục gốc core_app
+        // Thử 2: Đọc từ file trên disk
         if (!loaded) {
             String[] paths = {"db.properties", "../../db.properties", "src/core_app/db.properties"};
             for (String path : paths) {
@@ -42,37 +40,76 @@ public class DBContext {
                         props.load(fis);
                         loaded = true;
                         break;
-                    } catch (Exception e) {
-                        // ignore
-                    }
+                    } catch (Exception e) { /* ignore */ }
                 }
             }
         }
 
-        DB_URL = props.getProperty("db.url", DEFAULT_URL);
-        USER = props.getProperty("db.user", DEFAULT_USER);
-        PASS = props.getProperty("db.password", DEFAULT_PASS);
-    }
+        String dbUrl = props.getProperty("db.url", DEFAULT_URL);
+        String user = props.getProperty("db.user", DEFAULT_USER);
+        String pass = props.getProperty("db.password", DEFAULT_PASS);
 
-    public Connection getConnection() {
+        // Cấu hình HikariCP
+        HikariConfig config = new HikariConfig();
+        config.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        config.setJdbcUrl(dbUrl);
+        config.setUsername(user);
+        config.setPassword(pass);
+
+        // Pool tuning
+        config.setMaximumPoolSize(10);       // Tối đa 10 kết nối cùng lúc
+        config.setMinimumIdle(3);            // Luôn giữ sẵn 3 kết nối chờ
+        config.setIdleTimeout(30000);        // Kết nối idle bị thu hồi sau 30 giây
+        config.setMaxLifetime(1800000);      // Mỗi kết nối sống tối đa 30 phút
+        config.setConnectionTimeout(10000);  // Chờ lấy connection tối đa 10 giây
+        config.setPoolName("ShopeeWebPool");
+
+        // Validation
+        config.setConnectionTestQuery("SELECT 1");
+
+        HikariDataSource ds = null;
         try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            ds = new HikariDataSource(config);
+        } catch (Exception e) {
             try {
-                // Thử kết nối bằng Username/Password (SQL Authentication)
-                return DriverManager.getConnection(DB_URL, USER, PASS);
-            } catch (SQLException e) {
-                // Nếu thất bại, thử kết nối bằng Windows Authentication
-                System.out.println("SQL Auth failed, falling back to Windows Authentication...");
-                String winAuthUrl = DB_URL;
+                // Fallback: Windows Authentication
+                String winAuthUrl = dbUrl;
                 if (!winAuthUrl.toLowerCase().contains("integratedsecurity")) {
                     if (!winAuthUrl.endsWith(";")) winAuthUrl += ";";
                     winAuthUrl += "integratedSecurity=true;";
                 }
-                return DriverManager.getConnection(winAuthUrl);
+                HikariConfig winConfig = new HikariConfig();
+                winConfig.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                winConfig.setJdbcUrl(winAuthUrl);
+                winConfig.setMaximumPoolSize(10);
+                winConfig.setMinimumIdle(3);
+                winConfig.setIdleTimeout(30000);
+                winConfig.setMaxLifetime(1800000);
+                winConfig.setConnectionTimeout(10000);
+                winConfig.setPoolName("ShopeeWebPool-WinAuth");
+                winConfig.setConnectionTestQuery("SELECT 1");
+                ds = new HikariDataSource(winConfig);
+            } catch (Exception ex) {
+                System.err.println("FATAL: Cannot create connection pool: " + ex.getMessage());
+                ex.printStackTrace();
             }
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-            return null;
         }
+        dataSource = ds;
+    }
+
+    /**
+     * Lấy Connection từ Pool (cực nhanh, ~0.1ms thay vì ~400ms).
+     * QUAN TRỌNG: Luôn đóng connection sau khi dùng xong (try-with-resources)
+     * để trả lại cho pool, KHÔNG phải đóng thật sự.
+     */
+    public Connection getConnection() {
+        try {
+            if (dataSource != null) {
+                return dataSource.getConnection();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

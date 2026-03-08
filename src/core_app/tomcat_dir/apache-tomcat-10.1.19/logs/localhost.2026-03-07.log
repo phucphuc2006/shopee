@@ -1,0 +1,392 @@
+07-Mar-2026 16:28:06.705 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 16:28:06.705 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 16:28:06.708 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@1ee5632d')
+07-Mar-2026 18:01:52.933 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 18:01:52.933 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 18:01:52.936 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@1ee5632d')
+07-Mar-2026 18:02:19.938 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 18:02:19.938 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 18:02:19.940 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@7b18658a')
+07-Mar-2026 18:09:23.805 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 18:09:23.807 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 18:09:23.813 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@39023dbf')
+07-Mar-2026 18:29:06.451 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 18:29:06.451 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 18:29:06.456 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@52a7928a')
+07-Mar-2026 18:35:39.556 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 18:35:39.556 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 18:35:39.558 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@7b18658a')
+07-Mar-2026 18:42:30.851 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 18:42:30.851 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 18:42:30.853 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@39023dbf')
+07-Mar-2026 18:52:40.886 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 18:52:40.887 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 18:52:40.892 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@1ee5632d')
+07-Mar-2026 18:59:31.737 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 18:59:31.738 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 18:59:31.740 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@7b18658a')
+07-Mar-2026 19:03:29.738 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 19:03:29.738 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 19:03:29.739 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@19b75b2b')
+07-Mar-2026 19:08:33.389 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 19:08:33.389 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 19:08:33.392 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@478fb7dc')
+07-Mar-2026 19:11:37.518 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextDestroyed()
+07-Mar-2026 19:11:37.518 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextDestroyed()
+07-Mar-2026 19:11:51.586 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 19:11:51.587 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 19:11:51.589 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@30f28b5')
+07-Mar-2026 19:18:18.775 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 19:18:18.775 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 19:18:18.778 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@1a2ac487')
+07-Mar-2026 19:23:18.535 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 19:23:18.535 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 19:23:18.539 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@52a7928a')
+07-Mar-2026 19:31:22.152 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 19:31:22.153 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 19:31:22.156 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@59c43561')
+07-Mar-2026 19:42:58.485 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 19:42:58.486 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 19:42:58.492 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@281b2dfd')
+07-Mar-2026 19:44:33.098 SEVERE [http-nio-8080-exec-10] org.apache.catalina.core.ApplicationDispatcher.invoke Servlet.service() for servlet [jsp] threw exception
+	org.apache.jasper.JasperException: Unable to compile class for JSP: 
+
+An error occurred at line: [58] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved to a variable
+55:                         <!-- User Info -->
+56:                         <div class="profile-sidebar-user">
+57:                             <div class="profile-sidebar-avatar">
+58:                                 <% if (acc != null && acc.getAvatar() != null && !acc.getAvatar().trim().isEmpty()) { %>
+59:                                     <img src="<%= acc.getAvatar() %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+60:                                 <% } else { %>
+61:                                     <i class="fas fa-user"></i>
+
+
+An error occurred at line: [58] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved
+55:                         <!-- User Info -->
+56:                         <div class="profile-sidebar-user">
+57:                             <div class="profile-sidebar-avatar">
+58:                                 <% if (acc != null && acc.getAvatar() != null && !acc.getAvatar().trim().isEmpty()) { %>
+59:                                     <img src="<%= acc.getAvatar() %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+60:                                 <% } else { %>
+61:                                     <i class="fas fa-user"></i>
+
+
+An error occurred at line: [58] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved
+55:                         <!-- User Info -->
+56:                         <div class="profile-sidebar-user">
+57:                             <div class="profile-sidebar-avatar">
+58:                                 <% if (acc != null && acc.getAvatar() != null && !acc.getAvatar().trim().isEmpty()) { %>
+59:                                     <img src="<%= acc.getAvatar() %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+60:                                 <% } else { %>
+61:                                     <i class="fas fa-user"></i>
+
+
+An error occurred at line: [59] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved
+56:                         <div class="profile-sidebar-user">
+57:                             <div class="profile-sidebar-avatar">
+58:                                 <% if (acc != null && acc.getAvatar() != null && !acc.getAvatar().trim().isEmpty()) { %>
+59:                                     <img src="<%= acc.getAvatar() %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+60:                                 <% } else { %>
+61:                                     <i class="fas fa-user"></i>
+62:                                 <% } %>
+
+
+An error occurred at line: [65] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved to a variable
+62:                                 <% } %>
+63:                             </div>
+64:                             <div>
+65:                                 <div class="profile-sidebar-name"><%= acc != null ? acc.getFullName() : "" %></div>
+66:                                 <a href="${pageContext.request.contextPath}/user/account/profile" class="profile-sidebar-edit">
+67:                                     <i class="fas fa-edit"></i> Sá»­a Há»“ SÆ¡
+68:                                 </a>
+
+
+An error occurred at line: [65] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved
+62:                                 <% } %>
+63:                             </div>
+64:                             <div>
+65:                                 <div class="profile-sidebar-name"><%= acc != null ? acc.getFullName() : "" %></div>
+66:                                 <a href="${pageContext.request.contextPath}/user/account/profile" class="profile-sidebar-edit">
+67:                                     <i class="fas fa-edit"></i> Sá»­a Há»“ SÆ¡
+68:                                 </a>
+
+
+An error occurred at line: [128] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved to a variable
+125: 
+126:                         <%
+127:                             User user = (User) request.getAttribute("user");
+128:                             if (user == null) user = acc;
+129:                             String userName = user != null ? (user.getEmail() != null ? user.getEmail() : "") : "";
+130:                             String fullName = user != null ? (user.getFullName() != null ? user.getFullName() : "") : "";
+131:                             String email = user != null ? (user.getEmail() != null ? user.getEmail() : "") : "";
+
+
+Stacktrace:
+		at org.apache.jasper.compiler.DefaultErrorHandler.javacError(DefaultErrorHandler.java:102)
+		at org.apache.jasper.compiler.ErrorDispatcher.javacError(ErrorDispatcher.java:214)
+		at org.apache.jasper.compiler.JDTCompiler.generateClass(JDTCompiler.java:513)
+		at org.apache.jasper.compiler.Compiler.compile(Compiler.java:402)
+		at org.apache.jasper.compiler.Compiler.compile(Compiler.java:372)
+		at org.apache.jasper.compiler.Compiler.compile(Compiler.java:356)
+		at org.apache.jasper.JspCompilationContext.compile(JspCompilationContext.java:603)
+		at org.apache.jasper.servlet.JspServletWrapper.service(JspServletWrapper.java:396)
+		at org.apache.jasper.servlet.JspServlet.serviceJspFile(JspServlet.java:380)
+		at org.apache.jasper.servlet.JspServlet.service(JspServlet.java:328)
+		at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+		at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:205)
+		at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+		at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+		at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+		at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+		at org.apache.catalina.core.ApplicationDispatcher.invoke(ApplicationDispatcher.java:642)
+		at org.apache.catalina.core.ApplicationDispatcher.processRequest(ApplicationDispatcher.java:408)
+		at org.apache.catalina.core.ApplicationDispatcher.doForward(ApplicationDispatcher.java:340)
+		at org.apache.catalina.core.ApplicationDispatcher.forward(ApplicationDispatcher.java:277)
+		at controller.UserProfileServlet.doGet(UserProfileServlet.java:50)
+		at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+		at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+		at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:205)
+		at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+		at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+		at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+		at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+		at controller.UrlRewriteFilter.doFilter(UrlRewriteFilter.java:38)
+		at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+		at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+		at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+		at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+		at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482)
+		at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+		at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+		at org.apache.catalina.valves.AbstractAccessLogValve.invoke(AbstractAccessLogValve.java:673)
+		at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+		at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+		at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:391)
+		at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+		at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896)
+		at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1744)
+		at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+		at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191)
+		at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+		at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+		at java.base/java.lang.Thread.run(Thread.java:840)
+07-Mar-2026 19:44:33.101 SEVERE [http-nio-8080-exec-10] org.apache.catalina.core.StandardWrapperValve.invoke Servlet.service() for servlet [UserProfileServlet] in context with path [] threw exception [Unable to compile class for JSP: 
+
+An error occurred at line: [58] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved to a variable
+55:                         <!-- User Info -->
+56:                         <div class="profile-sidebar-user">
+57:                             <div class="profile-sidebar-avatar">
+58:                                 <% if (acc != null && acc.getAvatar() != null && !acc.getAvatar().trim().isEmpty()) { %>
+59:                                     <img src="<%= acc.getAvatar() %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+60:                                 <% } else { %>
+61:                                     <i class="fas fa-user"></i>
+
+
+An error occurred at line: [58] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved
+55:                         <!-- User Info -->
+56:                         <div class="profile-sidebar-user">
+57:                             <div class="profile-sidebar-avatar">
+58:                                 <% if (acc != null && acc.getAvatar() != null && !acc.getAvatar().trim().isEmpty()) { %>
+59:                                     <img src="<%= acc.getAvatar() %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+60:                                 <% } else { %>
+61:                                     <i class="fas fa-user"></i>
+
+
+An error occurred at line: [58] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved
+55:                         <!-- User Info -->
+56:                         <div class="profile-sidebar-user">
+57:                             <div class="profile-sidebar-avatar">
+58:                                 <% if (acc != null && acc.getAvatar() != null && !acc.getAvatar().trim().isEmpty()) { %>
+59:                                     <img src="<%= acc.getAvatar() %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+60:                                 <% } else { %>
+61:                                     <i class="fas fa-user"></i>
+
+
+An error occurred at line: [59] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved
+56:                         <div class="profile-sidebar-user">
+57:                             <div class="profile-sidebar-avatar">
+58:                                 <% if (acc != null && acc.getAvatar() != null && !acc.getAvatar().trim().isEmpty()) { %>
+59:                                     <img src="<%= acc.getAvatar() %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+60:                                 <% } else { %>
+61:                                     <i class="fas fa-user"></i>
+62:                                 <% } %>
+
+
+An error occurred at line: [65] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved to a variable
+62:                                 <% } %>
+63:                             </div>
+64:                             <div>
+65:                                 <div class="profile-sidebar-name"><%= acc != null ? acc.getFullName() : "" %></div>
+66:                                 <a href="${pageContext.request.contextPath}/user/account/profile" class="profile-sidebar-edit">
+67:                                     <i class="fas fa-edit"></i> Sá»­a Há»“ SÆ¡
+68:                                 </a>
+
+
+An error occurred at line: [65] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved
+62:                                 <% } %>
+63:                             </div>
+64:                             <div>
+65:                                 <div class="profile-sidebar-name"><%= acc != null ? acc.getFullName() : "" %></div>
+66:                                 <a href="${pageContext.request.contextPath}/user/account/profile" class="profile-sidebar-edit">
+67:                                     <i class="fas fa-edit"></i> Sá»­a Há»“ SÆ¡
+68:                                 </a>
+
+
+An error occurred at line: [128] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved to a variable
+125: 
+126:                         <%
+127:                             User user = (User) request.getAttribute("user");
+128:                             if (user == null) user = acc;
+129:                             String userName = user != null ? (user.getEmail() != null ? user.getEmail() : "") : "";
+130:                             String fullName = user != null ? (user.getFullName() != null ? user.getFullName() : "") : "";
+131:                             String email = user != null ? (user.getEmail() != null ? user.getEmail() : "") : "";
+
+
+Stacktrace:] with root cause
+	org.apache.jasper.JasperException: Unable to compile class for JSP: 
+
+An error occurred at line: [58] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved to a variable
+55:                         <!-- User Info -->
+56:                         <div class="profile-sidebar-user">
+57:                             <div class="profile-sidebar-avatar">
+58:                                 <% if (acc != null && acc.getAvatar() != null && !acc.getAvatar().trim().isEmpty()) { %>
+59:                                     <img src="<%= acc.getAvatar() %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+60:                                 <% } else { %>
+61:                                     <i class="fas fa-user"></i>
+
+
+An error occurred at line: [58] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved
+55:                         <!-- User Info -->
+56:                         <div class="profile-sidebar-user">
+57:                             <div class="profile-sidebar-avatar">
+58:                                 <% if (acc != null && acc.getAvatar() != null && !acc.getAvatar().trim().isEmpty()) { %>
+59:                                     <img src="<%= acc.getAvatar() %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+60:                                 <% } else { %>
+61:                                     <i class="fas fa-user"></i>
+
+
+An error occurred at line: [58] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved
+55:                         <!-- User Info -->
+56:                         <div class="profile-sidebar-user">
+57:                             <div class="profile-sidebar-avatar">
+58:                                 <% if (acc != null && acc.getAvatar() != null && !acc.getAvatar().trim().isEmpty()) { %>
+59:                                     <img src="<%= acc.getAvatar() %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+60:                                 <% } else { %>
+61:                                     <i class="fas fa-user"></i>
+
+
+An error occurred at line: [59] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved
+56:                         <div class="profile-sidebar-user">
+57:                             <div class="profile-sidebar-avatar">
+58:                                 <% if (acc != null && acc.getAvatar() != null && !acc.getAvatar().trim().isEmpty()) { %>
+59:                                     <img src="<%= acc.getAvatar() %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+60:                                 <% } else { %>
+61:                                     <i class="fas fa-user"></i>
+62:                                 <% } %>
+
+
+An error occurred at line: [65] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved to a variable
+62:                                 <% } %>
+63:                             </div>
+64:                             <div>
+65:                                 <div class="profile-sidebar-name"><%= acc != null ? acc.getFullName() : "" %></div>
+66:                                 <a href="${pageContext.request.contextPath}/user/account/profile" class="profile-sidebar-edit">
+67:                                     <i class="fas fa-edit"></i> Sá»­a Há»“ SÆ¡
+68:                                 </a>
+
+
+An error occurred at line: [65] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved
+62:                                 <% } %>
+63:                             </div>
+64:                             <div>
+65:                                 <div class="profile-sidebar-name"><%= acc != null ? acc.getFullName() : "" %></div>
+66:                                 <a href="${pageContext.request.contextPath}/user/account/profile" class="profile-sidebar-edit">
+67:                                     <i class="fas fa-edit"></i> Sá»­a Há»“ SÆ¡
+68:                                 </a>
+
+
+An error occurred at line: [128] in the jsp file: [/user_profile.jsp]
+acc cannot be resolved to a variable
+125: 
+126:                         <%
+127:                             User user = (User) request.getAttribute("user");
+128:                             if (user == null) user = acc;
+129:                             String userName = user != null ? (user.getEmail() != null ? user.getEmail() : "") : "";
+130:                             String fullName = user != null ? (user.getFullName() != null ? user.getFullName() : "") : "";
+131:                             String email = user != null ? (user.getEmail() != null ? user.getEmail() : "") : "";
+
+
+Stacktrace:
+		at org.apache.jasper.compiler.DefaultErrorHandler.javacError(DefaultErrorHandler.java:102)
+		at org.apache.jasper.compiler.ErrorDispatcher.javacError(ErrorDispatcher.java:214)
+		at org.apache.jasper.compiler.JDTCompiler.generateClass(JDTCompiler.java:513)
+		at org.apache.jasper.compiler.Compiler.compile(Compiler.java:402)
+		at org.apache.jasper.compiler.Compiler.compile(Compiler.java:372)
+		at org.apache.jasper.compiler.Compiler.compile(Compiler.java:356)
+		at org.apache.jasper.JspCompilationContext.compile(JspCompilationContext.java:603)
+		at org.apache.jasper.servlet.JspServletWrapper.service(JspServletWrapper.java:396)
+		at org.apache.jasper.servlet.JspServlet.serviceJspFile(JspServlet.java:380)
+		at org.apache.jasper.servlet.JspServlet.service(JspServlet.java:328)
+		at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+		at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:205)
+		at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+		at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+		at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+		at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+		at org.apache.catalina.core.ApplicationDispatcher.invoke(ApplicationDispatcher.java:642)
+		at org.apache.catalina.core.ApplicationDispatcher.processRequest(ApplicationDispatcher.java:408)
+		at org.apache.catalina.core.ApplicationDispatcher.doForward(ApplicationDispatcher.java:340)
+		at org.apache.catalina.core.ApplicationDispatcher.forward(ApplicationDispatcher.java:277)
+		at controller.UserProfileServlet.doGet(UserProfileServlet.java:50)
+		at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+		at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+		at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:205)
+		at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+		at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+		at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+		at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+		at controller.UrlRewriteFilter.doFilter(UrlRewriteFilter.java:38)
+		at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+		at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+		at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+		at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+		at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482)
+		at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+		at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+		at org.apache.catalina.valves.AbstractAccessLogValve.invoke(AbstractAccessLogValve.java:673)
+		at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+		at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+		at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:391)
+		at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+		at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896)
+		at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1744)
+		at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+		at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191)
+		at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+		at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+		at java.base/java.lang.Thread.run(Thread.java:840)
+07-Mar-2026 19:47:26.958 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()
+07-Mar-2026 19:47:26.958 INFO [main] org.apache.catalina.core.ApplicationContext.log SessionListener: contextInitialized()
+07-Mar-2026 19:47:26.960 INFO [main] org.apache.catalina.core.ApplicationContext.log ContextListener: attributeAdded('StockTicker', 'async.Stockticker@478fb7dc')
+07-Mar-2026 19:48:31.219 INFO [Thread-1] org.apache.catalina.core.ApplicationContext.log SessionListener: contextDestroyed()
+07-Mar-2026 19:48:31.219 INFO [Thread-1] org.apache.catalina.core.ApplicationContext.log ContextListener: contextDestroyed()

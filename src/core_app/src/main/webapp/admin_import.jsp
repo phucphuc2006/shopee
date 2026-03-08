@@ -24,12 +24,13 @@
 
             /* Sidebar */
             .sidebar {
-                min-height: 100vh;
+                height: 100vh;
                 background: #ffffff;
                 width: var(--sidebar-width);
                 position: fixed;
                 box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
                 z-index: 100;
+                    overflow-y: auto;
             }
 
             .sidebar-logo {
@@ -145,37 +146,9 @@
     <body>
 
         <!-- Sidebar -->
-        <div class="sidebar d-flex flex-column">
-            <div class="sidebar-logo">
-                <h4><i class="fas fa-shopping-bag me-1"></i> Admin Panel</h4>
-            </div>
-            <div class="mt-4 flex-grow-1">
-                <div class="nav-item">
-                    <a href="admin"><i class="fas fa-chart-pie"></i> Tổng Quan</a>
-                </div>
-                <div class="nav-item">
-                    <a href="admin-import" class="active"><i class="fas fa-database"></i> Quản lý Dữ Liệu</a>
-                </div>
-                <div class="nav-item">
-                    <a href="admin-generate"><i class="fas fa-magic"></i> Tạo Dữ Liệu</a>
-                </div>
-                <div class="nav-item">
-                    <a href="admin-products"><i class="fas fa-box-open"></i> Sản Phẩm</a>
-                </div>
-                <div class="nav-item">
-                    <a href="admin-orders"><i class="fas fa-clipboard-list"></i> Đơn Hàng</a>
-                </div>
-                <div class="nav-item">
-                    <a href="admin-users"><i class="fas fa-users"></i> Khách Hàng</a>
-                </div>
-                <div class="nav-item">
-                    <a href="home" target="_blank"><i class="fas fa-globe"></i> Truy Cập Cửa Hàng</a>
-                </div>
-            </div>
-            <div class="nav-item mb-4 border-top pt-3">
-                <a href="logout" class="text-danger"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a>
-            </div>
-        </div>
+
+
+        <%@ include file="admin_sidebar.jsp" %>
 
         <!-- Main Content -->
         <div class="main-content">

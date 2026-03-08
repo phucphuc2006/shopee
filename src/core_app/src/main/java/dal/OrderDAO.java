@@ -130,16 +130,90 @@ public class OrderDAO extends DBContext {
         }
     }
 
+    // ===== USER ORDER QUERIES =====
+
+    // Lấy đơn hàng của user theo status (cho trang Đơn Mua)
+    public List<String[]> getOrdersByUserId(int userId, String statusFilter) {
+        List<String[]> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+                "SELECT o.id, o.total_price, o.status, o.created_at "
+                + "FROM orders o "
+                + "WHERE o.user_id = ? AND o.is_deleted = 0 ");
+
+        boolean hasFilter = (statusFilter != null && !statusFilter.isEmpty() && !statusFilter.equalsIgnoreCase("ALL"));
+        if (hasFilter) {
+            sql.append("AND o.status = ? ");
+        }
+        sql.append("ORDER BY o.created_at DESC");
+
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            ps.setInt(1, userId);
+            if (hasFilter) {
+                ps.setString(2, statusFilter);
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(new String[] {
+                        String.valueOf(rs.getInt("id")),
+                        String.valueOf(rs.getDouble("total_price")),
+                        rs.getString("status"),
+                        rs.getTimestamp("created_at").toString()
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // Lấy chi tiết items của 1 đơn hàng
+    public List<String[]> getOrderItems(int orderId) {
+        List<String[]> list = new ArrayList<>();
+        String sql = "SELECT oi.quantity, oi.price_at_purchase, p.name, p.image_url " +
+                     "FROM order_items oi " +
+                     "JOIN product_variants pv ON oi.variant_id = pv.id " +
+                     "JOIN products p ON pv.product_id = p.id " +
+                     "WHERE oi.order_id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(new String[] {
+                    rs.getString("name"),
+                    rs.getString("image_url"),
+                    String.valueOf(rs.getInt("quantity")),
+                    String.valueOf(rs.getDouble("price_at_purchase"))
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     // ===== ADMIN ORDER MANAGEMENT =====
 
-    // Lấy tất cả đơn hàng (kèm tên khách hàng)
-    public List<String[]> getAllOrders() {
+    // Lấy tất cả đơn hàng (kèm tên khách hàng) có filter trạng thái
+    public List<String[]> getAllOrders(String statusFilter) {
         List<String[]> list = new ArrayList<>();
-        String sql = "SELECT o.id, u.full_name, u.email, o.total_price, o.status, o.created_at "
+        StringBuilder sql = new StringBuilder(
+                "SELECT o.id, u.full_name, u.email, o.total_price, o.status, o.created_at "
                 + "FROM orders o JOIN users u ON o.user_id = u.id "
-                + "ORDER BY o.created_at DESC";
+                + "WHERE o.is_deleted = 0 ");
+        
+        boolean hasFilter = (statusFilter != null && !statusFilter.isEmpty() && !statusFilter.equalsIgnoreCase("ALL"));
+        if (hasFilter) {
+            sql.append("AND o.status = ? ");
+        }
+        sql.append("ORDER BY o.created_at DESC");
+        
         try (Connection conn = getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            if (hasFilter) {
+                ps.setString(1, statusFilter);
+            }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 list.add(new String[] {
@@ -175,6 +249,7 @@ public class OrderDAO extends DBContext {
         List<String[]> list = new ArrayList<>();
         String sql = "SELECT TOP " + limit + " o.id, u.full_name, o.total_price, o.status, o.created_at "
                 + "FROM orders o JOIN users u ON o.user_id = u.id "
+                + "WHERE o.is_deleted = 0 "
                 + "ORDER BY o.created_at DESC";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -193,4 +268,152 @@ public class OrderDAO extends DBContext {
         }
         return list;
     }
+
+    // Xóa đơn hàng (Soft Delete)
+    public void deleteOrder(int orderId) {
+        String sql = "UPDATE orders SET is_deleted = 1 WHERE id = ?";
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Lấy danh sách đơn hàng đã xóa (Thùng rác)
+    public List<String[]> getDeletedOrders() {
+        List<String[]> list = new ArrayList<>();
+        String sql = "SELECT o.id, u.full_name, u.email, o.total_price, o.status, o.created_at "
+                + "FROM orders o JOIN users u ON o.user_id = u.id "
+                + "WHERE o.is_deleted = 1 "
+                + "ORDER BY o.created_at DESC";
+        
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(new String[] {
+                        String.valueOf(rs.getInt("id")),
+                        rs.getString("full_name"),
+                        rs.getString("email"),
+                        String.valueOf(rs.getDouble("total_price")),
+                        rs.getString("status"),
+                        rs.getTimestamp("created_at").toString()
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // Khôi phục đơn hàng
+    public void restoreOrder(int orderId) {
+        String sql = "UPDATE orders SET is_deleted = 0 WHERE id = ?";
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // --- BULK ACTIONS ---
+    private String buildInClause(int size) {
+        StringBuilder sb = new StringBuilder("(");
+        for (int i = 0; i < size; i++) {
+            sb.append("?");
+            if (i < size - 1) sb.append(",");
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    public void bulkUpdateOrderStatus(String[] ids, String newStatus) {
+        if (ids == null || ids.length == 0 || newStatus == null) return;
+        String sql = "UPDATE orders SET status = ? WHERE id IN " + buildInClause(ids.length);
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newStatus);
+            for (int i = 0; i < ids.length; i++) {
+                ps.setInt(i + 2, Integer.parseInt(ids[i]));
+            }
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void bulkDeleteOrders(String[] ids) {
+        if (ids == null || ids.length == 0) return;
+        String sql = "UPDATE orders SET is_deleted = 1 WHERE id IN " + buildInClause(ids.length);
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < ids.length; i++) {
+                ps.setInt(i + 1, Integer.parseInt(ids[i]));
+            }
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void bulkRestoreOrders(String[] ids) {
+        if (ids == null || ids.length == 0) return;
+        String sql = "UPDATE orders SET is_deleted = 0 WHERE id IN " + buildInClause(ids.length);
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < ids.length; i++) {
+                ps.setInt(i + 1, Integer.parseInt(ids[i]));
+            }
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void bulkDeletePermanentOrders(String[] ids) {
+        if (ids == null || ids.length == 0) return;
+        
+        Connection conn = null;
+        PreparedStatement psItems = null;
+        PreparedStatement psOrders = null;
+        
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false);
+            
+            // Xóa cascade Order_Items trước
+            String sqlItems = "DELETE FROM order_items WHERE order_id IN " + buildInClause(ids.length);
+            psItems = conn.prepareStatement(sqlItems);
+            for (int i = 0; i < ids.length; i++) {
+                psItems.setInt(i + 1, Integer.parseInt(ids[i]));
+            }
+            psItems.executeUpdate();
+            
+            // Xóa ở bảng Orders
+            String sqlOrders = "DELETE FROM orders WHERE id IN " + buildInClause(ids.length);
+            psOrders = conn.prepareStatement(sqlOrders);
+            for (int i = 0; i < ids.length; i++) {
+                psOrders.setInt(i + 1, Integer.parseInt(ids[i]));
+            }
+            psOrders.executeUpdate();
+            
+            conn.commit();
+        } catch (Exception e) {
+            if(conn != null) {
+                try { conn.rollback(); } catch(Exception ex) {}
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                if(psItems != null) psItems.close();
+                if(psOrders != null) psOrders.close();
+                if(conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch(Exception ex) {}
+        }
+    }
+    // --- END BULK ACTIONS ---
 }

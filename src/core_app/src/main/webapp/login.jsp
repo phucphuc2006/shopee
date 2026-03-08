@@ -289,9 +289,15 @@
             <div class="container d-flex justify-content-between align-items-center">
 
                 <div class="d-none d-lg-block text-center text-white">
-                    <img src="https://down-vn.img.susercontent.com/file/sg-11134004-7rd70-luj041g6f4r46c"
-                        class="banner-img" alt="Shopee Mall">
-                    <div class="mt-3 fw-bold fs-5">Yêu thích nhất Đông Nam Á</div>
+                    <div style="max-width:400px; margin:0 auto;">
+                        <i class="fas fa-shopping-bag" style="font-size:120px; opacity:0.9; margin-bottom:20px; display:block;"></i>
+                        <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,0.15); padding:8px 20px; border-radius:4px; margin-bottom:15px;">
+                            <i class="fas fa-store" style="font-size:22px;"></i>
+                            <span style="font-size:26px; font-weight:700; letter-spacing:1px;">Shopee Mall</span>
+                        </div>
+                        <div class="mt-3 fw-bold fs-5">Yêu thích nhất Đông Nam Á</div>
+                        <div class="mt-2" style="font-size:14px; opacity:0.85;">Mua sắm online - giá tốt mỗi ngày</div>
+                    </div>
                 </div>
 
                 <div class="login-card">

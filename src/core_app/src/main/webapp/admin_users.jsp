@@ -27,12 +27,13 @@
                     }
 
                     .sidebar {
-                        min-height: 100vh;
+                        height: 100vh;
                         background: #fff;
                         width: var(--sidebar-width);
                         position: fixed;
                         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
                         z-index: 100;
+                    overflow-y: auto;
                     }
 
                     .sidebar-logo {
@@ -140,28 +141,8 @@
 
             <body>
                 <!-- Sidebar -->
-                <div class="sidebar d-flex flex-column">
-                    <div class="sidebar-logo">
-                        <h4><i class="fas fa-shopping-bag me-1"></i> Admin Panel</h4>
-                    </div>
-                    <div class="mt-4 flex-grow-1">
-                        <div class="nav-item"><a href="admin"><i class="fas fa-chart-pie"></i> Tổng Quan</a></div>
-                        <div class="nav-item"><a href="admin-import"><i class="fas fa-database"></i> Quản lý Dữ Liệu</a>
-                        </div>
-                        <div class="nav-item"><a href="admin-generate"><i class="fas fa-magic"></i> Tạo Dữ Liệu</a></div>
-                        <div class="nav-item"><a href="admin-products"><i class="fas fa-box-open"></i> Sản Phẩm</a>
-                        </div>
-                        <div class="nav-item"><a href="admin-orders"><i class="fas fa-clipboard-list"></i> Đơn Hàng</a>
-                        </div>
-                        <div class="nav-item"><a href="admin-users" class="active"><i class="fas fa-users"></i> Khách
-                                Hàng</a></div>
-                        <div class="nav-item"><a href="home" target="_blank"><i class="fas fa-globe"></i> Truy Cập Cửa
-                                Hàng</a></div>
-                    </div>
-                    <div class="nav-item mb-4 border-top pt-3">
-                        <a href="logout" class="text-danger"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a>
-                    </div>
-                </div>
+
+                <%@ include file="admin_sidebar.jsp" %>
 
                 <!-- Main Content -->
                 <div class="main-content">
@@ -181,22 +162,77 @@
                         </div>
                     </div>
 
+                    <% if (session.getAttribute("successMessage") != null) { %>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i> <%= session.getAttribute("successMessage") %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <% session.removeAttribute("successMessage"); %>
+                    <% } %>
+                    
+                    <% if (session.getAttribute("errorMessage") != null) { %>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i> <%= session.getAttribute("errorMessage") %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        <% session.removeAttribute("errorMessage"); %>
+                    <% } %>
+
                     <!-- Content Box -->
                     <div class="content-box">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h5 class="fw-bold m-0 text-dark"><i class="fas fa-users me-2 text-muted"></i>Danh sách
-                                khách hàng</h5>
-                            <span class="badge bg-secondary fs-6">
-                                <% List<User> users = (List<User>) request.getAttribute("users");
-                                        out.print(users != null ? users.size() : 0);
-                                        %> người dùng
-                            </span>
+                            <h5 class="fw-bold m-0 text-dark"><i class="fas fa-users me-2 text-muted"></i>
+                                <% if (request.getAttribute("isTrash") != null && (Boolean) request.getAttribute("isTrash")) { %>
+                                    Thùng rác khách hàng
+                                <% } else { %>
+                                    Danh sách khách hàng
+                                <% } %>
+                            </h5>
+                            <div class="d-flex gap-2 align-items-center">
+                                <span class="badge bg-secondary fs-6">
+                                    <% List<User> users = (List<User>) request.getAttribute("users");
+                                            out.print(users != null ? users.size() : 0);
+                                            %> người dùng
+                                </span>
+                                <% if (request.getAttribute("isTrash") != null && (Boolean) request.getAttribute("isTrash")) { %>
+                                    <a href="admin-users" class="btn btn-secondary btn-sm shadow-sm ms-2">
+                                        <i class="fas fa-arrow-left me-1"></i> Quay lại
+                                    </a>
+                                <% } else { %>
+                                    <a href="admin-users?action=view_trash" class="btn btn-warning btn-sm shadow-sm ms-2">
+                                        <i class="fas fa-trash-alt me-1"></i> Xem Thùng Rác
+                                    </a>
+                                <% } %>
+                            </div>
                         </div>
 
+                        <!-- Bulk Actions -->
+                        <div class="bulk-actions mb-4" style="display: none;" id="bulk-action-bar">
+                            <span class="me-2 text-muted fw-medium"><span id="selected-count">0</span> khách hàng đã chọn</span>
+                            <% if (request.getAttribute("isTrash") != null && (Boolean) request.getAttribute("isTrash")) { %>
+                                <button type="button" class="btn btn-outline-success shadow-sm" onclick="submitBulkAction('bulk_restore')">
+                                    <i class="fas fa-undo me-1"></i> Khôi phục mục chọn
+                                </button>
+                                <button type="button" class="btn btn-danger shadow-sm ms-2" onclick="submitBulkAction('bulk_delete_permanent')">
+                                    <i class="fas fa-trash-alt me-1"></i> Xóa vĩnh viễn mục chọn
+                                </button>
+                            <% } else { %>
+                                <button type="button" class="btn btn-outline-danger shadow-sm" onclick="submitBulkAction('bulk_delete')">
+                                    <i class="fas fa-user-times me-1"></i> Cấm mục chọn
+                                </button>
+                            <% } %>
+                        </div>
+
+                        <!-- Main Table Form -->
+                        <form id="bulkForm" action="admin-users" method="POST">
+                            <input type="hidden" name="action" id="bulk-action-input" value="">
                         <div class="table-responsive">
                             <table class="table table-hover border align-middle">
                                 <thead class="table-light">
                                     <tr>
+                                        <th width="40" class="text-center">
+                                            <input class="form-check-input" type="checkbox" id="selectAll">
+                                        </th>
                                         <th width="60">ID</th>
                                         <th>Tên Khách Hàng</th>
                                         <th>Email</th>
@@ -219,6 +255,9 @@
                                         idx++;
                                         %>
                                         <tr>
+                                            <td class="text-center">
+                                                <input class="form-check-input row-checkbox" type="checkbox" name="selectedIds" value="<%= u.getId() %>">
+                                            </td>
                                             <td class="fw-bold text-muted">#<%= u.getId() %>
                                             </td>
                                             <td>
@@ -248,21 +287,35 @@
                                                 </span>
                                             </td>
                                             <td class="text-center">
-                                                <form action="admin-users" method="POST" style="display:inline;"
-                                                    onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng này?');">
-                                                    <input type="hidden" name="action" value="delete">
-                                                    <input type="hidden" name="id" value="<%= u.getId() %>">
-                                                    <button type="submit"
-                                                        class="btn btn-sm btn-outline-danger shadow-sm">
-                                                        <i class="fas fa-trash"></i> Xóa
+                                                <% if (request.getAttribute("isTrash") != null && (Boolean) request.getAttribute("isTrash")) { %>
+                                                    <form action="admin-users" method="POST" style="display:inline;">
+                                                        <input type="hidden" name="action" value="restore">
+                                                        <input type="hidden" name="id" value="<%= u.getId() %>">
+                                                        <button type="submit" class="btn btn-sm btn-outline-success shadow-sm mb-1">
+                                                            <i class="fas fa-undo"></i> Khôi phục
+                                                        </button>
+                                                    </form>
+                                                <% } else { %>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary shadow-sm mb-1"
+                                                            onclick="openAssignRoleModal(<%= u.getId() %>, '<%= u.getFullName().replace("'", "\\\\'") %>', <%= u.getAdminRoleId() != null ? u.getAdminRoleId() : "0" %>, '<%= u.getRole() %>')">
+                                                        <i class="fas fa-exchange-alt"></i> Cấp/Thu Quyền
                                                     </button>
-                                                </form>
+                                                    <form action="admin-users" method="POST" style="display:inline;"
+                                                        onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng này?');">
+                                                        <input type="hidden" name="action" value="delete">
+                                                        <input type="hidden" name="id" value="<%= u.getId() %>">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger shadow-sm mb-1">
+                                                            <i class="fas fa-trash"></i> Xóa
+                                                        </button>
+                                                    </form>
+                                                <% } %>
                                             </td>
                                         </tr>
                                         <% } } %>
                                 </tbody>
                             </table>
                         </div>
+                        </form>
 
                         <% if(users==null || users.isEmpty()) { %>
                             <div class="text-center py-5 text-muted">
@@ -274,7 +327,112 @@
                     </div>
                 </div>
 
+                <!-- Assign Role Modal -->
+                <div class="modal fade" id="assignRoleModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title fw-bold">Cấp/Thu Quyền <span id="assign-role-username" class="text-primary"></span></h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form action="admin-users" method="POST">
+                                <div class="modal-body">
+                                    <input type="hidden" name="action" value="assign_role">
+                                    <input type="hidden" name="id" id="assign-role-id">
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-medium">Chọn Vai Trò (Nhóm Quyền)</label>
+                                        <select class="form-select" name="admin_role_id" id="assign-role-select">
+                                            <option value="0">-- Khách Hàng (Tước quyền Admin) --</option>
+                                            <% 
+                                            List<model.Role> adminRoles = (List<model.Role>) request.getAttribute("adminRoles");
+                                            if (adminRoles != null) {
+                                                for (model.Role r : adminRoles) {
+                                            %>
+                                            <option value="<%= r.getId() %>"><%= r.getName() %> - <%= r.getDescription() %></option>
+                                            <%  }
+                                            } %>
+                                        </select>
+                                        <div class="form-text mt-2 text-danger">Lưu ý: Nếu chọn "Khách Hàng", người dùng sẽ bị tước mọi quyền quản trị hệ thống.</div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer bg-light">
+                                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit" class="btn btn-shopee">Áp dụng</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+                <script>
+                    function openAssignRoleModal(id, name, roleId, currentRole) {
+                        document.getElementById('assign-role-id').value = id;
+                        document.getElementById('assign-role-username').innerText = name;
+                        
+                        let select = document.getElementById('assign-role-select');
+                        if (currentRole.toLowerCase() === 'admin' && roleId > 0) {
+                            select.value = roleId;
+                        } else {
+                            select.value = '0';
+                        }
+                        
+                        var assignRoleModal = new bootstrap.Modal(document.getElementById('assignRoleModal'));
+                        assignRoleModal.show();
+                    }
+
+                    // --- Bulk Actions Script ---
+                    document.addEventListener("DOMContentLoaded", function () {
+                        const selectAllCheckbox = document.getElementById('selectAll');
+                        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+                        const bulkActionBar = document.getElementById('bulk-action-bar');
+                        const selectedCountSpan = document.getElementById('selected-count');
+
+                        function updateBulkActionVisibility() {
+                            const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+                            selectedCountSpan.textContent = checkedCount;
+                            if (checkedCount > 0) {
+                                bulkActionBar.style.display = 'block';
+                            } else {
+                                bulkActionBar.style.display = 'none';
+                                selectAllCheckbox.checked = false;
+                            }
+                        }
+
+                        if (selectAllCheckbox) {
+                            selectAllCheckbox.addEventListener('change', function () {
+                                rowCheckboxes.forEach(cb => {
+                                    cb.checked = selectAllCheckbox.checked;
+                                });
+                                updateBulkActionVisibility();
+                            });
+                        }
+
+                        rowCheckboxes.forEach(cb => {
+                            cb.addEventListener('change', function () {
+                                const allChecked = document.querySelectorAll('.row-checkbox:checked').length === rowCheckboxes.length;
+                                selectAllCheckbox.checked = allChecked;
+                                updateBulkActionVisibility();
+                            });
+                        });
+                    });
+
+                    function submitBulkAction(actionName) {
+                        const count = document.querySelectorAll('.row-checkbox:checked').length;
+                        if (count === 0) return;
+                        
+                        let msg = "";
+                        if(actionName === 'bulk_delete') msg = "Bạn có chắc chắn muốn cấm (Ban) " + count + " người dùng đã chọn vào thùng rác không?";
+                        else if(actionName === 'bulk_delete_permanent') msg = "⚠️ CẢNH BÁO: Rất nhiều đơn hàng phụ thuộc vào User ID. Việc XÓA VĨNH VIỄN " + count + " tài khoản này có thể gây lỗi. Phê duyệt?";
+                        else if(actionName === 'bulk_restore') msg = "Khôi phục " + count + " người dùng đã chọn?";
+
+                        if (confirm(msg)) {
+                            document.getElementById('bulk-action-input').value = actionName;
+                            document.getElementById('bulkForm').submit();
+                        }
+                    }
+                </script>
             </body>
 
             </html>

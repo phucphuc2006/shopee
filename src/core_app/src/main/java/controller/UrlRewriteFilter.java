@@ -34,7 +34,7 @@ public class UrlRewriteFilter implements Filter {
         String requestURI = req.getRequestURI();
         
         // Bỏ qua các file tĩnh và các path đặc biệt
-        if (requestURI.contains("/css/") || requestURI.contains("/images/") || requestURI.contains("/js/") || requestURI.contains("/user/")) {
+        if (requestURI.contains("/css/") || requestURI.contains("/images/") || requestURI.contains("/js/") || requestURI.contains("/user/") || requestURI.contains("/avatars/")) {
             chain.doFilter(request, response);
             return;
         }

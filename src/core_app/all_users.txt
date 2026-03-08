@@ -1,0 +1,5 @@
+--- USERS IN DB ---
+ID: 1, Username: admin, Email: null, Phone: null, Role: ADMIN
+ID: 10, Username: phucvantran456@gmail.com, Email: phucvantran456@gmail.com, Phone: 0356794577, Role: ADMIN
+ID: 11, Username: phucvantran012@gmail.com, Email: phucvantran012@gmail.com, Phone: , Role: CUSTOMER
+-------------------

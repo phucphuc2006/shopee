@@ -21,7 +21,8 @@ import jakarta.servlet.http.HttpSession;
  * Nếu không phải admin → redirect về /login
  */
 @WebFilter(filterName = "AdminAuthFilter", urlPatterns = { "/admin", "/admin-import", "/admin-products",
-        "/admin-orders", "/admin-users", "/admin-generate" })
+        "/admin-orders", "/admin-users", "/admin-generate", "/admin-categories", "/admin-logs", "/admin-roles",
+        "/admin-settings", "/admin-reviews", "/admin-search", "/admin-alerts" })
 // NOTE: /admin-verify-otp is intentionally NOT included here
 // because the admin hasn't completed 2FA yet at that point
 public class AdminAuthFilter implements Filter {
@@ -65,7 +66,57 @@ public class AdminAuthFilter implements Filter {
             return;
         }
 
-        // 4. Là Admin → cho đi tiếp
+        // --- CHECK ADVANCED RBAC PERMISSIONS ---
+        User currentUser = null;
+        if (account instanceof User) {
+            currentUser = (User) account;
+        } else if (account instanceof Admin) {
+            // Chuyển đổi ngược lại nếu đang dùng class Admin cũ
+            Admin adm = (Admin) account;
+            currentUser = new User(adm.getId(), adm.getFullName(), adm.getEmail(), adm.getPhone(), adm.getWallet(), adm.getPasswordHash(), adm.getNote(), "ADMIN");
+            currentUser.setAdminRoleId(1); // Super admin
+        }
+        
+        if (currentUser != null) {
+            String path = httpRequest.getServletPath();
+            boolean hasPermission = false;
+            
+            // SUPER ADMIN luôn được đi qua
+            if (currentUser.getAdminRoleId() != null && currentUser.getAdminRoleId() == 1) {
+                hasPermission = true;
+            } else {
+                // Mapping Permissions
+                if (path.equals("/admin")) {
+                    hasPermission = currentUser.hasPermission("VIEW_DASHBOARD");
+                } else if (path.equals("/admin-products")) {
+                    hasPermission = currentUser.hasPermission("MANAGE_PRODUCTS");
+                } else if (path.equals("/admin-categories")) {
+                    hasPermission = currentUser.hasPermission("MANAGE_CATEGORIES");
+                } else if (path.equals("/admin-orders") || path.equals("/admin-order-details")) {
+                    hasPermission = currentUser.hasPermission("MANAGE_ORDERS");
+                } else if (path.equals("/admin-users") || path.equals("/admin-user-details")) {
+                    hasPermission = currentUser.hasPermission("MANAGE_USERS");
+                } else if (path.equals("/admin-logs")) {
+                    hasPermission = currentUser.hasPermission("VIEW_AUDIT_LOGS");
+                } else if (path.equals("/admin-import") || path.equals("/admin-generate") || path.startsWith("/admin-roles") || path.equals("/admin-settings")) {
+                    hasPermission = currentUser.hasPermission("MANAGE_SYSTEM");
+                } else if (path.equals("/admin-reviews")) {
+                    hasPermission = currentUser.hasPermission("MANAGE_PRODUCTS");
+                } else if (path.equals("/admin-search")) {
+                    hasPermission = true; // Global search cho mọi admin
+                } else if (path.equals("/admin-alerts")) {
+                    hasPermission = currentUser.hasPermission("VIEW_DASHBOARD");
+                } else {
+                    hasPermission = true; // Các đường dẫn không map thì cho qua (ví dụ ajax)
+                }
+            }
+            if (!hasPermission) {
+                httpResponse.sendRedirect(httpRequest.getContextPath() + "/admin?error=access_denied");
+                return;
+            }
+        }
+
+        // 4. Là Admin và có quyền → cho đi tiếp
         chain.doFilter(request, response);
     }
 

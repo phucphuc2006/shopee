@@ -12,6 +12,41 @@ public class ProductDAO extends DBContext {
 
     private static final int PAGE_SIZE = 30;
 
+    /**
+     * Query NHẸ cho trang chủ — KHÔNG JOIN order_items (tránh SUM chậm).
+     * Chỉ lấy 30 sản phẩm mới nhất với giá thấp nhất.
+     */
+    public List<ProductDTO> getHomeProducts() {
+        List<ProductDTO> list = new ArrayList<>();
+        String sql = "SELECT TOP 30 p.id, p.name, s.shop_name, " +
+                "(SELECT MIN(v.price) FROM product_variants v WHERE v.product_id = p.id) as min_price, " +
+                "p.image_url, 0 as sold_count, s.rating, s.location, p.category_id " +
+                "FROM products p " +
+                "JOIN shops s ON p.shop_id = s.id " +
+                "WHERE p.is_deleted = 0 " +
+                "ORDER BY p.id DESC";
+
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ProductDTO dto = new ProductDTO(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("shop_name"),
+                        rs.getBigDecimal("min_price"),
+                        rs.getString("image_url"));
+                dto.setSoldCount(rs.getInt("sold_count"));
+                dto.setRating(rs.getDouble("rating"));
+                dto.setLocation(rs.getString("location"));
+                dto.setCategoryId(rs.getInt("category_id"));
+                list.add(dto);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     // Overload cho các trang chỉ search bằng keyword (ví dụ HomeServlet)
     public List<ProductDTO> searchProducts(String txtSearch) {
         return searchProducts(txtSearch, null, null, null, null, null, null, 1);
@@ -34,7 +69,7 @@ public class ProductDAO extends DBContext {
         }
 
         if (cateIds != null && cateIds.length > 0) {
-            sql.append("AND (p.id % 20 + 1) IN (");
+            sql.append("AND p.category_id IN (");
             for (int i = 0; i < cateIds.length; i++) {
                 sql.append("?");
                 if (i < cateIds.length - 1)
@@ -46,17 +81,10 @@ public class ProductDAO extends DBContext {
 
         if (locations != null && locations.length > 0) {
             sql.append("AND (");
-            boolean firstLoc = true;
-            for (String loc : locations) {
-                if (!firstLoc)
-                    sql.append(" OR ");
-                if ("hcm".equals(loc))
-                    sql.append("p.id % 3 NOT IN (0, 2)");
-                else if ("hn".equals(loc))
-                    sql.append("p.id % 2 = 0");
-                else if ("dn".equals(loc))
-                    sql.append("p.id % 3 = 0");
-                firstLoc = false;
+            for (int i = 0; i < locations.length; i++) {
+                if (i > 0) sql.append(" OR ");
+                sql.append("s.location LIKE ?");
+                parameters.add("%" + locations[i] + "%");
             }
             sql.append(") ");
         }
@@ -93,7 +121,7 @@ public class ProductDAO extends DBContext {
                         + "FROM products p "
                         + "JOIN shops s ON p.shop_id = s.id "
                         + "JOIN product_variants v ON p.id = v.product_id "
-                        + "WHERE 1=1 ");
+                        + "WHERE p.is_deleted = 0 ");
 
         List<Object> parameters = new ArrayList<>();
         buildFilterClauses(sql, parameters, txtSearch, cateIds, locations, minPriceStr, maxPriceStr, ratingStr);
@@ -124,30 +152,22 @@ public class ProductDAO extends DBContext {
             String maxPriceStr, String ratingStr, String sortBy, int page) {
         List<ProductDTO> list = new ArrayList<>();
 
-        // Xử lý sort cần thêm cột sold_count cho "bestselling"
-        boolean needSold = "bestselling".equals(sortBy);
-
         StringBuilder sql = new StringBuilder(
-                "SELECT p.id, p.name, s.shop_name, MIN(v.price) as min_price, p.image_url ");
-
-        if (needSold) {
-            sql.append(", COALESCE(SUM(oi.quantity), 0) as sold_count ");
-        }
+                "SELECT p.id, p.name, s.shop_name, MIN(v.price) as min_price, p.image_url, "
+                + "COALESCE(SUM(oi.quantity), 0) as sold_count, "
+                + "s.rating, s.location, p.category_id ");
 
         sql.append("FROM products p "
                 + "JOIN shops s ON p.shop_id = s.id "
-                + "JOIN product_variants v ON p.id = v.product_id ");
+                + "JOIN product_variants v ON p.id = v.product_id "
+                + "LEFT JOIN order_items oi ON v.id = oi.variant_id ");
 
-        if (needSold) {
-            sql.append("LEFT JOIN order_items oi ON v.id = oi.variant_id ");
-        }
-
-        sql.append("WHERE 1=1 ");
+        sql.append("WHERE p.is_deleted = 0 ");
 
         List<Object> parameters = new ArrayList<>();
         buildFilterClauses(sql, parameters, txtSearch, cateIds, locations, minPriceStr, maxPriceStr, ratingStr);
 
-        sql.append("GROUP BY p.id, p.name, s.shop_name, p.image_url ");
+        sql.append("GROUP BY p.id, p.name, s.shop_name, p.image_url, s.rating, s.location, p.category_id ");
 
         buildHavingClause(sql, parameters, minPriceStr, maxPriceStr);
 
@@ -161,8 +181,13 @@ public class ProductDAO extends DBContext {
         } else if ("price_desc".equals(sortBy)) {
             sql.append("ORDER BY min_price DESC ");
         } else {
-            // "popular" hoặc mặc định → Liên quan (theo keyword match + id)
-            sql.append("ORDER BY p.id DESC ");
+            // "popular" hoặc mặc định → Liên quan: ưu tiên sản phẩm khớp keyword + bán chạy
+            if (txtSearch != null && !txtSearch.trim().isEmpty()) {
+                sql.append("ORDER BY CASE WHEN p.name LIKE ? THEN 0 ELSE 1 END, sold_count DESC, p.id DESC ");
+                parameters.add(txtSearch.trim() + "%"); // Ưu tiên tên bắt đầu bằng keyword
+            } else {
+                sql.append("ORDER BY sold_count DESC, p.id DESC ");
+            }
         }
 
         // Phân trang bằng OFFSET / FETCH NEXT (SQL Server 2012+)
@@ -180,12 +205,17 @@ public class ProductDAO extends DBContext {
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                list.add(new ProductDTO(
+                ProductDTO dto = new ProductDTO(
                         rs.getInt("id"),
                         rs.getString("name"),
                         rs.getString("shop_name"),
                         rs.getBigDecimal("min_price"),
-                        rs.getString("image_url")));
+                        rs.getString("image_url"));
+                dto.setSoldCount(rs.getInt("sold_count"));
+                dto.setRating(rs.getDouble("rating"));
+                dto.setLocation(rs.getString("location"));
+                dto.setCategoryId(rs.getInt("category_id"));
+                list.add(dto);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -195,7 +225,7 @@ public class ProductDAO extends DBContext {
 
     // 2. Get Detail (Trả về Product Full)
     public Product getProductById(int id) {
-        String sql = "SELECT * FROM products WHERE id = ?";
+        String sql = "SELECT * FROM products WHERE id = ? AND is_deleted = 0";
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
@@ -223,47 +253,126 @@ public class ProductDAO extends DBContext {
     }
 
     // 4. Insert (Admin)
-    public void insertProduct(String name, java.math.BigDecimal price, String img) {
-        String sql = "INSERT INTO products (shop_id, name, description, price, image_url) VALUES (1, ?, 'Mô tả', ?, ?)";
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+    public void insertProduct(String name, java.math.BigDecimal price, String img, int categoryId) {
+        // Dùng IDENTITY để lấy ID sản phẩm vừa tạo, rồi tạo variant mặc định
+        String sqlProduct = "INSERT INTO products (shop_id, name, description, price, image_url, category_id) VALUES (1, ?, N'Mô tả sản phẩm', ?, ?, ?); SELECT SCOPE_IDENTITY() AS newId";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sqlProduct)) {
             ps.setString(1, name);
             ps.setBigDecimal(2, price);
             ps.setString(3, img);
-            ps.executeUpdate();
+            ps.setInt(4, categoryId);
+            boolean hasResult = ps.execute();
+            int newProductId = -1;
+            // Tìm resultset chứa SCOPE_IDENTITY
+            if (hasResult) {
+                try (ResultSet rs = ps.getResultSet()) {
+                    if (rs.next()) newProductId = rs.getInt(1);
+                }
+            }
+            if (newProductId <= 0) {
+                // Fallback: skip to next result set
+                if (ps.getMoreResults()) {
+                    try (ResultSet rs = ps.getResultSet()) {
+                        if (rs.next()) newProductId = rs.getInt(1);
+                    }
+                }
+            }
+            // Tạo variant mặc định
+            if (newProductId > 0) {
+                String sqlVariant = "INSERT INTO product_variants (product_id, variant_name, price, stock_quantity) VALUES (?, N'Mặc định', ?, 100)";
+                try (PreparedStatement ps2 = conn.prepareStatement(sqlVariant)) {
+                    ps2.setInt(1, newProductId);
+                    ps2.setBigDecimal(2, price);
+                    ps2.executeUpdate();
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // 5. Delete (Admin)
+    // 5. Delete (Admin) - Soft Delete
     public void deleteProduct(String id) {
         try (Connection conn = getConnection()) {
-            conn.prepareStatement("DELETE FROM product_variants WHERE product_id=" + id).executeUpdate();
-            conn.prepareStatement("DELETE FROM products WHERE id=" + id).executeUpdate();
+            conn.prepareStatement("UPDATE products SET is_deleted = 1 WHERE id=" + id).executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // 6. Update (Admin)
-    public void updateProduct(int id, String name, java.math.BigDecimal price, String img) {
-        String sql = "UPDATE products SET name = ?, price = ?, image_url = ? WHERE id = ?";
+    // --- BULK ACTIONS ---
+    private String buildInClause(int size) {
+        StringBuilder sb = new StringBuilder("(");
+        for (int i = 0; i < size; i++) {
+            sb.append("?");
+            if (i < size - 1) sb.append(",");
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    public void bulkDeleteProducts(String[] ids) {
+        if (ids == null || ids.length == 0) return;
+        String sql = "UPDATE products SET is_deleted = 1 WHERE id IN " + buildInClause(ids.length);
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, name);
-            ps.setBigDecimal(2, price);
-            ps.setString(3, img);
-            ps.setInt(4, id);
+            for (int i = 0; i < ids.length; i++) {
+                ps.setInt(i + 1, Integer.parseInt(ids[i]));
+            }
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // 7. Get All Products (Admin)
-    public List<Product> getAllProducts() {
-        List<Product> list = new ArrayList<>();
-        String sql = "SELECT * FROM products ORDER BY id DESC";
+    public void bulkRestoreProducts(String[] ids) {
+        if (ids == null || ids.length == 0) return;
+        String sql = "UPDATE products SET is_deleted = 0 WHERE id IN " + buildInClause(ids.length);
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < ids.length; i++) {
+                ps.setInt(i + 1, Integer.parseInt(ids[i]));
+            }
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void bulkDeletePermanentProducts(String[] ids) {
+        if (ids == null || ids.length == 0) return;
+        String sql = "DELETE FROM products WHERE id IN " + buildInClause(ids.length);
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < ids.length; i++) {
+                ps.setInt(i + 1, Integer.parseInt(ids[i]));
+            }
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    // --- END BULK ACTIONS ---
+
+    // Admin: lấy danh sách sản phẩm đã xóa (Thùng rác)
+    public List<Product> getDeletedProducts(String search, int page) {
+        List<Product> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM products WHERE is_deleted = 1 ");
+        List<Object> params = new ArrayList<>();
+
+        if (search != null && !search.isEmpty()) {
+            sql.append("AND name LIKE ? ");
+            params.add("%" + search + "%");
+        }
+        sql.append("ORDER BY id DESC ");
+
+        if (page < 1) page = 1;
+        int offset = (page - 1) * PAGE_SIZE;
+        sql.append("OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add(offset);
+        params.add(PAGE_SIZE);
+
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 list.add(new Product(
@@ -273,12 +382,124 @@ public class ProductDAO extends DBContext {
                         rs.getString("description"),
                         rs.getBigDecimal("price"),
                         rs.getString("image_url"),
-                        rs.getTimestamp("created_at")));
+                        rs.getTimestamp("created_at"),
+                        rs.getInt("category_id")));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return list;
+    }
+
+     // Admin: khôi phục sản phẩm
+    public void restoreProduct(String id) {
+        try (Connection conn = getConnection()) {
+            conn.prepareStatement("UPDATE products SET is_deleted = 0 WHERE id=" + id).executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 6. Update (Admin)
+    public void updateProduct(int id, String name, java.math.BigDecimal price, String img, int categoryId) {
+        String sql = "UPDATE products SET name = ?, price = ?, image_url = ?, category_id = ? WHERE id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ps.setBigDecimal(2, price);
+            ps.setString(3, img);
+            ps.setInt(4, categoryId);
+            ps.setInt(5, id);
+            ps.executeUpdate();
+
+            // Đồng bộ giá vào variant (nếu có) hoặc tạo variant mới
+            String checkVariant = "SELECT COUNT(*) FROM product_variants WHERE product_id = ?";
+            try (PreparedStatement psCheck = conn.prepareStatement(checkVariant)) {
+                psCheck.setInt(1, id);
+                try (ResultSet rs = psCheck.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        // Cập nhật giá tất cả variant
+                        String updVariant = "UPDATE product_variants SET price = ? WHERE product_id = ?";
+                        try (PreparedStatement psUpd = conn.prepareStatement(updVariant)) {
+                            psUpd.setBigDecimal(1, price);
+                            psUpd.setInt(2, id);
+                            psUpd.executeUpdate();
+                        }
+                    } else {
+                        // Tạo variant mặc định nếu chưa có
+                        String insVariant = "INSERT INTO product_variants (product_id, variant_name, price, stock_quantity) VALUES (?, N'Mặc định', ?, 100)";
+                        try (PreparedStatement psIns = conn.prepareStatement(insVariant)) {
+                            psIns.setInt(1, id);
+                            psIns.setBigDecimal(2, price);
+                            psIns.executeUpdate();
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 7. Get All Products (Admin)
+    public List<Product> getAdminProducts(String search, int page) {
+        List<Product> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM products WHERE is_deleted = 0 ");
+        List<Object> params = new ArrayList<>();
+
+        if (search != null && !search.isEmpty()) {
+            sql.append("AND name LIKE ? ");
+            params.add("%" + search + "%");
+        }
+        sql.append("ORDER BY id DESC ");
+
+        if (page < 1) page = 1;
+        int offset = (page - 1) * PAGE_SIZE;
+        sql.append("OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add(offset);
+        params.add(PAGE_SIZE);
+
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(new Product(
+                        rs.getInt("id"),
+                        rs.getInt("shop_id"),
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        rs.getBigDecimal("price"),
+                        rs.getString("image_url"),
+                        rs.getTimestamp("created_at"),
+                        rs.getInt("category_id")));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public int countAdminProducts(String search) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM products WHERE is_deleted = 0 ");
+        List<Object> params = new ArrayList<>();
+        if (search != null && !search.isEmpty()) {
+            sql.append("AND name LIKE ? ");
+            params.add("%" + search + "%");
+        }
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     // 8. Get Sold Count for a product (from order_items via product_variants)

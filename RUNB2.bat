@@ -35,6 +35,8 @@ echo      ✓ Build thành công!
 :: 3. Deploy WAR
 echo.
 echo [3/4] Đang deploy WAR vào Tomcat...
+if exist "tomcat_dir\apache-tomcat-10.1.19\webapps\ROOT" rmdir /s /q "tomcat_dir\apache-tomcat-10.1.19\webapps\ROOT"
+if exist "tomcat_dir\apache-tomcat-10.1.19\webapps\ROOT.war" del /f /q "tomcat_dir\apache-tomcat-10.1.19\webapps\ROOT.war"
 copy /Y "target\shopee-web-1.0-SNAPSHOT.war" "tomcat_dir\apache-tomcat-10.1.19\webapps\ROOT.war" >nul
 echo      ✓ Deploy thành công!
 

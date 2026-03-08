@@ -38,6 +38,12 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
+        if (phone == null || !phone.matches("^[0-9]{9,15}$")) {
+            request.setAttribute("mess", "Số điện thoại không hợp lệ (9-15 chữ số)!");
+            request.getRequestDispatcher("register.jsp").forward(request, response);
+            return;
+        }
+
         UserDAO dao = new UserDAO();
         if (dao.checkEmailExist(email)) {
             request.setAttribute("mess", "Email này đã được sử dụng!");

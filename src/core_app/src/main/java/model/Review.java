@@ -90,4 +90,24 @@ public class Review {
     public void setUsername(String username) {
         this.username = username;
     }
+
+    // Moderation fields
+    private String status;       // PENDING, APPROVED, REJECTED
+    private String productName;  // From JOIN with products table
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
 }

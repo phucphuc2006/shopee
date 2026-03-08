@@ -12,6 +12,11 @@ public class User {
     protected String role;        // Thêm vai trò
     protected String gender;      // Giới tính
     protected String dateOfBirth; // Ngày sinh
+    protected String avatar;      // Ảnh đại diện
+    
+    // Advanced RBAC
+    protected Integer adminRoleId;
+    protected java.util.Set<String> permissions;
 
     public User() {
     }
@@ -107,5 +112,36 @@ public class User {
 
     public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public Integer getAdminRoleId() {
+        return adminRoleId;
+    }
+
+    public void setAdminRoleId(Integer adminRoleId) {
+        this.adminRoleId = adminRoleId;
+    }
+
+    public java.util.Set<String> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(java.util.Set<String> permissions) {
+        this.permissions = permissions;
+    }
+    
+    public boolean hasPermission(String permissionId) {
+        if ("admin".equalsIgnoreCase(this.role) && this.adminRoleId != null && this.adminRoleId == 1) {
+            return true; // Super Admin LUÔN có mọi quyền
+        }
+        return permissions != null && permissions.contains(permissionId);
     }
 }

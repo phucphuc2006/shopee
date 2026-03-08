@@ -37,7 +37,13 @@
                         <li class="header__navbar-item header__navbar-item--separate" style="font-weight: 500;">
                             <div class="user-dropdown-wrapper">
                                 <div class="user-dropdown-trigger" id="userDropdownTrigger">
-                                    <span class="user-avatar-small"><i class="fas fa-user-circle"></i></span>
+                                    <span class="user-avatar-small">
+                                        <% if (acc.getAvatar() != null && !acc.getAvatar().trim().isEmpty()) { %>
+                                            <img src="<%= acc.getAvatar() %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';" style="width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:middle;">
+                                        <% } else { %>
+                                            <i class="fas fa-user-circle"></i>
+                                        <% } %>
+                                    </span>
                                     <span><%= acc.getFullName() %></span>
                                     <% if ("admin".equalsIgnoreCase(acc.getRole())) { %>
                                         <a href="${pageContext.request.contextPath}/admin" style="color: #ffce3d; margin-left:5px; font-weight: bold; text-decoration:none;" onclick="event.stopPropagation();">[ADMIN]</a>
@@ -121,7 +127,11 @@
                         <!-- User Info -->
                         <div class="profile-sidebar-user">
                             <div class="profile-sidebar-avatar">
-                                <i class="fas fa-user"></i>
+                                <% if (acc != null && acc.getAvatar() != null && !acc.getAvatar().trim().isEmpty()) { %>
+                                    <img src="<%= acc.getAvatar() %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                                <% } else { %>
+                                    <i class="fas fa-user"></i>
+                                <% } %>
                             </div>
                             <div>
                                 <div class="profile-sidebar-name"><%= acc != null ? acc.getFullName() : "" %></div>
@@ -139,22 +149,22 @@
                             <a href="${pageContext.request.contextPath}/user/account/profile" class="profile-menu-item active">
                                 <i class="fas fa-id-card"></i> Hồ Sơ
                             </a>
-                            <a href="#" class="profile-menu-item">
+                            <a href="${pageContext.request.contextPath}/user/account/bank" class="profile-menu-item">
                                 <i class="fas fa-university"></i> Ngân Hàng
                             </a>
-                            <a href="#" class="profile-menu-item">
+                            <a href="${pageContext.request.contextPath}/user/account/address" class="profile-menu-item">
                                 <i class="fas fa-map-marker-alt"></i> Địa Chỉ
                             </a>
-                            <a href="#" class="profile-menu-item">
+                            <a href="${pageContext.request.contextPath}/user/account/password" class="profile-menu-item">
                                 <i class="fas fa-lock"></i> Đổi Mật Khẩu
                             </a>
-                            <a href="#" class="profile-menu-item">
+                            <a href="${pageContext.request.contextPath}/user/account/notification" class="profile-menu-item">
                                 <i class="fas fa-bell"></i> Cài Đặt Thông Báo
                             </a>
-                            <a href="#" class="profile-menu-item">
+                            <a href="${pageContext.request.contextPath}/user/account/privacy" class="profile-menu-item">
                                 <i class="fas fa-shield-alt"></i> Những Thiết Lập Riêng Tư
                             </a>
-                            <a href="#" class="profile-menu-item">
+                            <a href="${pageContext.request.contextPath}/user/account/personal" class="profile-menu-item">
                                 <i class="fas fa-user-tag"></i> Thông Tin Cá Nhân
                             </a>
                         </div>
@@ -166,13 +176,13 @@
                         </div>
 
                         <div class="profile-menu-section">
-                            <a href="#" class="profile-menu-heading orange" style="text-decoration:none;">
+                            <a href="${pageContext.request.contextPath}/user/voucher" class="profile-menu-heading orange" style="text-decoration:none;">
                                 <i class="fas fa-ticket-alt"></i> Kho Voucher
                             </a>
                         </div>
 
                         <div class="profile-menu-section">
-                            <a href="#" class="profile-menu-heading green" style="text-decoration:none;">
+                            <a href="${pageContext.request.contextPath}/user/coins" class="profile-menu-heading green" style="text-decoration:none;">
                                 <i class="fas fa-coins"></i> Shopee Xu
                             </a>
                         </div>
@@ -207,7 +217,7 @@
                             }
                         %>
 
-                        <form action="${pageContext.request.contextPath}/user/account/profile" method="post">
+                        <form action="${pageContext.request.contextPath}/user/account/profile" method="post" enctype="multipart/form-data">
                             <div class="profile-form-body">
                                 <div class="profile-form-left">
                                     <!-- Tên đăng nhập -->
@@ -296,12 +306,17 @@
 
                                 <!-- Avatar Upload -->
                                 <div class="profile-form-right">
-                                    <div class="profile-avatar-preview">
-                                        <i class="fas fa-user"></i>
+                                    <div class="profile-avatar-preview" id="avatarPreview">
+                                        <% String avatarUrl = (user != null) ? user.getAvatar() : null; %>
+                                        <% if (avatarUrl != null && !avatarUrl.trim().isEmpty()) { %>
+                                            <img src="<%= avatarUrl %>" alt="Avatar" onerror="this.onerror=null; this.src='https://cf.shopee.vn/file/40acfe9cc5ba0856aa76d0aece330f89_tn';">
+                                        <% } else { %>
+                                            <i class="fas fa-user"></i>
+                                        <% } %>
                                     </div>
                                     <label class="profile-avatar-upload-btn">
                                         Chọn Ảnh
-                                        <input type="file" accept=".jpg,.jpeg,.png" style="display:none;" id="avatarUpload">
+                                        <input type="file" name="avatarFile" accept=".jpg,.jpeg,.png" style="display:none;" id="avatarUpload">
                                     </label>
                                     <div class="profile-avatar-hint">
                                         Dung lượng file tối đa 1 MB<br>
@@ -366,15 +381,36 @@
                 var file = e.target.files[0];
                 if (!file) return;
                 if (file.size > 1024 * 1024) {
-                    window.alert && false; // Don't use alert
+                    alert('Ảnh quá lớn! Dung lượng tối đa là 1MB.');
+                    fileInput.value = '';
+                    return;
+                }
+                var validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                if (validTypes.indexOf(file.type) === -1) {
+                    alert('Chỉ hỗ trợ định dạng .JPEG, .PNG');
+                    fileInput.value = '';
                     return;
                 }
                 var reader = new FileReader();
                 reader.onload = function(ev) {
-                    var preview = document.querySelector('.profile-avatar-preview');
+                    var preview = document.getElementById('avatarPreview');
                     preview.innerHTML = '<img src="' + ev.target.result + '" alt="Avatar">';
                 };
                 reader.readAsDataURL(file);
+            });
+        })();
+
+        // User dropdown toggle
+        (function() {
+            var trigger = document.getElementById('userDropdownTrigger');
+            var menu = document.getElementById('userDropdownMenu');
+            if (!trigger || !menu) return;
+            trigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                menu.classList.toggle('show');
+            });
+            document.addEventListener('click', function() {
+                menu.classList.remove('show');
             });
         })();
     </script>

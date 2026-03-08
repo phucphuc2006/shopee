@@ -44,8 +44,7 @@ public class ProductManageServlet extends HttpServlet {
             }
 
             ProductDAO dao = new ProductDAO();
-            // Gọi hàm insert mới (3 tham số)
-            dao.insertProduct(name, price, image);
+            dao.insertProduct(name, price, image, 1);
 
             response.sendRedirect("home");
 

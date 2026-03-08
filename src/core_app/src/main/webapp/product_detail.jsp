@@ -74,19 +74,27 @@
                                 object-fit: contain;
                             }
 
+                            .gallery-container {
+                                position: relative;
+                                margin-top: 5px;
+                            }
+
                             .gallery-list {
                                 display: flex;
                                 gap: 10px;
-                                overflow-x: auto;
+                                overflow-x: hidden;
                                 padding-bottom: 5px;
+                                scroll-behavior: smooth;
                             }
 
                             .gallery-item {
                                 width: 82px;
                                 height: 82px;
+                                min-width: 82px;
                                 cursor: pointer;
                                 border: 2px solid transparent;
                                 opacity: 0.8;
+                                flex-shrink: 0;
                             }
 
                             .gallery-item:hover,
@@ -99,6 +107,38 @@
                                 width: 100%;
                                 height: 100%;
                                 object-fit: cover;
+                            }
+
+                            .gallery-nav-btn {
+                                position: absolute;
+                                top: 50%;
+                                transform: translateY(-50%);
+                                width: 24px;
+                                height: 40px;
+                                background: rgba(0, 0, 0, 0.15);
+                                color: #fff;
+                                border: none;
+                                cursor: pointer;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                z-index: 5;
+                                font-size: 14px;
+                                transition: background 0.2s;
+                            }
+
+                            .gallery-nav-btn:hover {
+                                background: rgba(0, 0, 0, 0.4);
+                            }
+
+                            .gallery-nav-btn--left {
+                                left: 0;
+                                border-radius: 0 2px 2px 0;
+                            }
+
+                            .gallery-nav-btn--right {
+                                right: 0;
+                                border-radius: 2px 0 0 2px;
                             }
 
                             /* Share & Like */
@@ -594,7 +634,7 @@
                                 <div class="container">
                                     <div class="shopee-breadcrumb">
                                         <a href="home">Shopee</a> <span>&gt;</span>
-                                        <a href="#">Thiết Bị Điện Tử</a> <span>&gt;</span>
+                                        <a href="#">${categoryDisplayName != null ? categoryDisplayName : 'Shopee'}</a> <span>&gt;</span>
                                         <span class="current">
                                             <%= p.getName()%>
                                         </span>
@@ -606,15 +646,23 @@
                                                 <img id="mainImg" src="<%= p.getImageUrl()%>" class="main-image"
                                                     alt="Product Image">
                                             </div>
-                                            <div class="gallery-list">
-                                                <div class="gallery-item active" onmouseover="changeImg(this)">
-                                                    <img src="<%= p.getImageUrl()%>">
-                                                </div>
-                                                <% if (listImg !=null) { for (String img : listImg) {%>
-                                                    <div class="gallery-item" onmouseover="changeImg(this)">
-                                                        <img src="<%= img%>">
+                                            <div class="gallery-container">
+                                                <button class="gallery-nav-btn gallery-nav-btn--left" id="galleryBtnLeft" onclick="scrollGallery(-1)" style="display:none;">
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </button>
+                                                <div class="gallery-list" id="galleryList">
+                                                    <div class="gallery-item active" onclick="changeImg(this)" onmouseover="changeImg(this)">
+                                                        <img src="<%= p.getImageUrl()%>">
                                                     </div>
+                                                    <% if (listImg !=null) { for (String img : listImg) {%>
+                                                        <div class="gallery-item" onclick="changeImg(this)" onmouseover="changeImg(this)">
+                                                            <img src="<%= img%>">
+                                                        </div>
                                                     <% } }%>
+                                                </div>
+                                                <button class="gallery-nav-btn gallery-nav-btn--right" id="galleryBtnRight" onclick="scrollGallery(1)">
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </button>
                                             </div>
 
                                             <div class="share-like">
@@ -628,9 +676,9 @@
                                                         style="color:#10c2ff; cursor:pointer;"></i></div>
                                                 <div style="width: 1px; height: 20px; background: #dbdbdb;"></div>
                                                 <div id="likeBtn" style="cursor:pointer;" onclick="toggleLike()">
-                                                    <i id="likeIcon" class="far fa-heart like-heart"></i>
+                                                    <i id="likeIcon" class="<%= (Boolean.TRUE.equals(request.getAttribute("isLiked"))) ? "fas" : "far" %> fa-heart like-heart" style="<%= (Boolean.TRUE.equals(request.getAttribute("isLiked"))) ? "color:#ee4d2d" : "" %>"></i>
                                                     <span id="likeText">Đã thích (<span
-                                                            id="likeCount">2.1k</span>)</span>
+                                                            id="likeCount"><%= request.getAttribute("wishlistCount") %></span>)</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -801,33 +849,26 @@
                                                     </div>
 
                                                     <div class="option-row">
-                                                        <span class="option-label" style="align-self: center;">Nhóm
-                                                            Màu</span>
+                                                        <span class="option-label" style="align-self: center;">Màu Sắc</span>
                                                         <div class="option-items">
-                                                            <button class="option-btn" onclick="selectOpt(this)"
-                                                                style="padding: 4px 12px; display: flex; align-items: center; gap: 8px;">
-                                                                <img src="<%= p.getImageUrl() %>"
-                                                                    style="width: 24px; height: 24px; object-fit: cover;">
-                                                                Mèo Tôm Cầm Hoa
-                                                            </button>
-                                                            <button class="option-btn" onclick="selectOpt(this)"
-                                                                style="padding: 4px 12px; display: flex; align-items: center; gap: 8px;">
-                                                                <img src="<%= p.getImageUrl() %>"
-                                                                    style="width: 24px; height: 24px; object-fit: cover;">
-                                                                Mèo Trắng Nơ Hồng
-                                                            </button>
+                                                            <% String[] productColors = (String[]) request.getAttribute("productColors");
+                                                               if (productColors != null) { for (String color : productColors) { %>
+                                                                <button class="option-btn" onclick="selectOpt(this)"
+                                                                    style="padding: 4px 12px;">
+                                                                    <%= color %>
+                                                                </button>
+                                                            <% } } %>
                                                         </div>
                                                     </div>
 
                                                     <div class="option-row">
-                                                        <span class="option-label">Phiên Bản</span>
+                                                        <span class="option-label"><%= request.getAttribute("variantLabel") != null ? request.getAttribute("variantLabel") : "Phiên Bản" %></span>
                                                         <div class="option-items">
-                                                            <button class="option-btn"
-                                                                onclick="selectOpt(this)">128GB</button>
-                                                            <button class="option-btn"
-                                                                onclick="selectOpt(this)">256GB</button>
-                                                            <button class="option-btn"
-                                                                onclick="selectOpt(this)">512GB</button>
+                                                            <% String[] productVariants = (String[]) request.getAttribute("productVariants");
+                                                               if (productVariants != null) { for (String variant : productVariants) { %>
+                                                                <button class="option-btn"
+                                                                    onclick="selectOpt(this)"><%= variant %></button>
+                                                            <% } } %>
                                                         </div>
                                                     </div>
 
@@ -886,6 +927,17 @@
                                     </div>
 
                                     <!-- SHOP INFO SECTION -->
+                                    <%
+                                        model.Shop shopInfo = (model.Shop) request.getAttribute("shop");
+                                        String shopName = (shopInfo != null) ? shopInfo.getShopName() : "Shop";
+                                        String shopRatingStr = (shopInfo != null) ? String.format("%.1f", shopInfo.getRating()) : "4.9";
+                                        int shopProductCount = (shopInfo != null) ? shopInfo.getProductCount() : 0;
+                                        int shopFollowerCount = (shopInfo != null) ? shopInfo.getFollowerCount() : 0;
+                                        String shopResponseRate = (shopInfo != null && shopInfo.getResponseRate() != null) ? shopInfo.getResponseRate() : "N/A";
+                                        String shopResponseTime = (shopInfo != null && shopInfo.getResponseTime() != null) ? shopInfo.getResponseTime() : "N/A";
+                                        String shopJoinDuration = (shopInfo != null) ? shopInfo.getJoinDuration() : "N/A";
+                                        String shopAvatar = (shopInfo != null && shopInfo.getOwnerAvatar() != null) ? shopInfo.getOwnerAvatar() : "";
+                                    %>
                                     <div class="section-box" style="padding: 20px 25px;">
                                         <div style="display: flex; align-items: center; gap: 20px;">
                                             <!-- Shop Avatar & Name -->
@@ -894,8 +946,13 @@
                                                 <div style="position: relative;">
                                                     <div
                                                         style="width: 78px; height: 78px; border-radius: 50%; border: 1px solid rgba(0,0,0,.09); overflow: hidden; background: #f5f5f5; display: flex; align-items: center; justify-content: center;">
-                                                        <i class="fas fa-store"
-                                                            style="font-size: 28px; color: #ee4d2d;"></i>
+                                                        <% if (shopAvatar != null && !shopAvatar.isEmpty()) { %>
+                                                            <img src="<%= shopAvatar %>" alt="<%= shopName %>" style="width:100%; height:100%; object-fit:cover;"
+                                                                onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\'fas fa-store\' style=\'font-size:28px;color:#ee4d2d\'></i>';">
+                                                        <% } else { %>
+                                                            <i class="fas fa-store"
+                                                                style="font-size: 28px; color: #ee4d2d;"></i>
+                                                        <% } %>
                                                     </div>
                                                     <span
                                                         style="position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); background: #ee4d2d; color: #fff; font-size: 10px; padding: 1px 5px; border-radius: 2px; white-space: nowrap;">Yêu
@@ -904,7 +961,7 @@
                                                 <div>
                                                     <div
                                                         style="font-size: 16px; color: rgba(0,0,0,.87); font-weight: 500; margin-bottom: 4px;">
-                                                        Shopee Official Store
+                                                        <%= shopName %>
                                                     </div>
                                                     <div style="font-size: 12px; color: #26aa99; margin-bottom: 10px;">
                                                         <i class="fas fa-circle"
@@ -916,10 +973,10 @@
                                                             style="background: rgba(238,77,45,0.1); color: #ee4d2d; border: 1px solid #ee4d2d; padding: 6px 18px; font-size: 13px; border-radius: 2px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
                                                             <i class="fas fa-comment-dots"></i> Chat Ngay
                                                         </button>
-                                                        <button
-                                                            style="background: #fff; color: rgba(0,0,0,.87); border: 1px solid rgba(0,0,0,.09); padding: 6px 18px; font-size: 13px; border-radius: 2px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                                        <a href="shop?id=<%= p.getShopId() %>"
+                                                            style="background: #fff; color: rgba(0,0,0,.87); border: 1px solid rgba(0,0,0,.09); padding: 6px 18px; font-size: 13px; border-radius: 2px; cursor: pointer; display: flex; align-items: center; gap: 5px; text-decoration: none;">
                                                             <i class="fas fa-store"></i> Xem Shop
-                                                        </button>
+                                                        </a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -929,32 +986,32 @@
                                                 style="width: 1px; height: 80px; background: rgba(0,0,0,.05); margin: 0 10px;">
                                             </div>
 
-                                            <!-- Shop Stats Grid -->
+                                            <!-- Shop Stats Grid - DỮ LIỆU THẬT TỪ DB -->
                                             <div
                                                 style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px 40px; flex: 1; font-size: 13px;">
                                                 <div style="display: flex; justify-content: space-between;">
                                                     <span style="color: rgba(0,0,0,.4);">Đánh Giá</span>
-                                                    <span style="color: #ee4d2d;">6,5tr</span>
+                                                    <span style="color: #ee4d2d;"><%= shopRatingStr %> / 5.0</span>
                                                 </div>
                                                 <div style="display: flex; justify-content: space-between;">
                                                     <span style="color: rgba(0,0,0,.4);">Tỉ Lệ Phản Hồi</span>
-                                                    <span style="color: #ee4d2d;">100%</span>
+                                                    <span style="color: #ee4d2d;"><%= shopResponseRate %></span>
                                                 </div>
                                                 <div style="display: flex; justify-content: space-between;">
                                                     <span style="color: rgba(0,0,0,.4);">Tham Gia</span>
-                                                    <span style="color: #ee4d2d;">10 năm trước</span>
+                                                    <span style="color: #ee4d2d;"><%= shopJoinDuration %></span>
                                                 </div>
                                                 <div style="display: flex; justify-content: space-between;">
                                                     <span style="color: rgba(0,0,0,.4);">Sản Phẩm</span>
-                                                    <span style="color: #ee4d2d;">1,6k</span>
+                                                    <span style="color: #ee4d2d;"><%= shopProductCount %></span>
                                                 </div>
                                                 <div style="display: flex; justify-content: space-between;">
                                                     <span style="color: rgba(0,0,0,.4);">Thời Gian Phản Hồi</span>
-                                                    <span style="color: #ee4d2d;">trong vài giờ</span>
+                                                    <span style="color: #ee4d2d;"><%= shopResponseTime %></span>
                                                 </div>
                                                 <div style="display: flex; justify-content: space-between;">
                                                     <span style="color: rgba(0,0,0,.4);">Người Theo Dõi</span>
-                                                    <span style="color: #ee4d2d;">3,1tr</span>
+                                                    <span style="color: #ee4d2d;"><%= shopFollowerCount %></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1273,13 +1330,39 @@
 
                                         <script>
                                             // ============================================================
-                                            // 1. HOVER ĐỔI ẢNH
+                                            // 1. HOVER/CLICK ĐỔI ẢNH + GALLERY NAVIGATION
                                             // ============================================================
                                             function changeImg(el) {
                                                 document.getElementById('mainImg').src = el.querySelector('img').src;
                                                 document.querySelectorAll('.gallery-item').forEach(i => i.classList.remove('active'));
                                                 el.classList.add('active');
                                             }
+
+                                            // Gallery scroll with navigation arrows
+                                            function scrollGallery(direction) {
+                                                const gallery = document.getElementById('galleryList');
+                                                const scrollAmount = 92; // 82px width + 10px gap
+                                                gallery.scrollLeft += direction * scrollAmount;
+                                                setTimeout(updateGalleryButtons, 300);
+                                            }
+
+                                            function updateGalleryButtons() {
+                                                const gallery = document.getElementById('galleryList');
+                                                const btnLeft = document.getElementById('galleryBtnLeft');
+                                                const btnRight = document.getElementById('galleryBtnRight');
+                                                if (!gallery || !btnLeft || !btnRight) return;
+                                                btnLeft.style.display = gallery.scrollLeft > 5 ? 'flex' : 'none';
+                                                btnRight.style.display = (gallery.scrollLeft + gallery.clientWidth) < (gallery.scrollWidth - 5) ? 'flex' : 'none';
+                                            }
+
+                                            // Initialize gallery buttons on load
+                                            document.addEventListener('DOMContentLoaded', function() {
+                                                updateGalleryButtons();
+                                                const gallery = document.getElementById('galleryList');
+                                                if (gallery) {
+                                                    gallery.addEventListener('scroll', updateGalleryButtons);
+                                                }
+                                            });
 
                                             // ============================================================
                                             // 2. CHỌN OPTION (Màu/Size)
@@ -1445,35 +1528,52 @@
                                             // ============================================================
                                             // 8. LIKE (YÊU THÍCH) TOGGLE
                                             // ============================================================
-                                            let isLiked = false;
-                                            let likeCountNum = 2100; // 2.1k
+                                            let isLiked = <%= (Boolean.TRUE.equals(request.getAttribute("isLiked"))) ? "true" : "false" %>;
+                                            let likeCountNum = <%= request.getAttribute("wishlistCount") %>;
+                                            let productIdForLike = <%= ((model.Product)request.getAttribute("detail")).getId() %>;
 
                                             function toggleLike() {
                                                 let icon = document.getElementById('likeIcon');
                                                 let countSpan = document.getElementById('likeCount');
 
-                                                isLiked = !isLiked;
+                                                // Gọi API thật
+                                                fetch('wishlist?productId=' + productIdForLike, { method: 'POST' })
+                                                    .then(res => {
+                                                        if (res.status === 401) {
+                                                            // Chưa đăng nhập
+                                                            alert('Vui lòng đăng nhập để thích sản phẩm!');
+                                                            window.location.href = 'login';
+                                                            return null;
+                                                        }
+                                                        return res.json();
+                                                    })
+                                                    .then(data => {
+                                                        if (!data) return;
+                                                        isLiked = data.liked;
+                                                        likeCountNum = data.count;
 
-                                                if (isLiked) {
-                                                    icon.classList.remove('far');
-                                                    icon.classList.add('fas');
-                                                    likeCountNum++;
-                                                } else {
-                                                    icon.classList.remove('fas');
-                                                    icon.classList.add('far');
-                                                    likeCountNum--;
-                                                }
+                                                        if (isLiked) {
+                                                            icon.classList.remove('far');
+                                                            icon.classList.add('fas');
+                                                            icon.style.color = '#ee4d2d';
+                                                        } else {
+                                                            icon.classList.remove('fas');
+                                                            icon.classList.add('far');
+                                                            icon.style.color = '';
+                                                        }
 
-                                                // Format number
-                                                if (likeCountNum >= 1000) {
-                                                    countSpan.textContent = (likeCountNum / 1000).toFixed(1) + 'k';
-                                                } else {
-                                                    countSpan.textContent = likeCountNum;
-                                                }
+                                                        // Format number
+                                                        if (likeCountNum >= 1000) {
+                                                            countSpan.textContent = (likeCountNum / 1000).toFixed(1) + 'k';
+                                                        } else {
+                                                            countSpan.textContent = likeCountNum;
+                                                        }
 
-                                                // Animation
-                                                icon.classList.add('liked');
-                                                setTimeout(() => icon.classList.remove('liked'), 300);
+                                                        // Animation
+                                                        icon.classList.add('liked');
+                                                        setTimeout(() => icon.classList.remove('liked'), 300);
+                                                    })
+                                                    .catch(err => console.error('Wishlist error:', err));
                                             }
 
                                             // ============================================================

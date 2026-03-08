@@ -72,14 +72,12 @@ public class FacebookCallbackServlet extends HttpServlet {
 
             // Bước 2b: Dùng access_token để lấy thông tin user từ Graph API
             String userInfoResponse = getUserInfo(accessToken);
-            System.out.println("[FB Login] UserInfo response: " + userInfoResponse);
             JsonObject userInfo = JsonParser.parseString(userInfoResponse).getAsJsonObject();
 
             String name = userInfo.has("name") ? userInfo.get("name").getAsString() : "";
             String email = userInfo.has("email") ? userInfo.get("email").getAsString() : "";
             String fbId = userInfo.has("id") ? userInfo.get("id").getAsString() : "";
 
-            System.out.println("[FB Login] id=" + fbId + ", name=" + name + ", email=" + email);
 
             // Nếu FB không trả email (user chưa verify email), dùng FB ID
             if (email.isEmpty()) {
@@ -96,7 +94,6 @@ public class FacebookCallbackServlet extends HttpServlet {
 
             if (account != null) {
                 // Đăng nhập thành công
-                System.out.println("[FB Login] Đăng nhập thành công: " + account.getEmail());
                 HttpSession session = request.getSession();
                 session.setAttribute("account", account);
                 response.sendRedirect("home");

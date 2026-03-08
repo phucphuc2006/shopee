@@ -15,7 +15,7 @@ public class UserDAO extends DBContext {
      * Password sẽ được verify bằng Argon2 ở tầng Controller
      */
     public User findByEmailOrPhone(String loginIdentifier) {
-        String sql = "SELECT * FROM Users WHERE email = ? OR phone = ? OR username = ?";
+        String sql = "SELECT * FROM Users WHERE (email = ? OR phone = ? OR username = ?) AND is_deleted = 0";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -38,7 +38,7 @@ public class UserDAO extends DBContext {
      * Dùng findByEmailOrPhone() + PasswordService.verify() thay thế.
      */
     public User login(String loginIdentifier, String passHash) {
-        String sql = "SELECT * FROM Users WHERE (email = ? OR phone = ?) AND password = ?";
+        String sql = "SELECT * FROM Users WHERE (email = ? OR phone = ?) AND password = ? AND is_deleted = 0";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -58,7 +58,7 @@ public class UserDAO extends DBContext {
 
     // 1. Kiểm tra email đã có người dùng chưa
     public boolean checkEmailExist(String email) {
-        String sql = "SELECT * FROM Users WHERE email = ?";
+        String sql = "SELECT * FROM Users WHERE email = ? AND is_deleted = 0";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
@@ -84,6 +84,12 @@ public class UserDAO extends DBContext {
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
         } catch (Exception e) {
+            try {
+                java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.FileWriter("c:/Users/phucv/Downloads/ShopeeWeb/signup_error.log", true));
+                pw.println("Error in signup: " + e.getMessage());
+                e.printStackTrace(pw);
+                pw.close();
+            } catch (Exception ignored) {}
             e.printStackTrace();
             return false;
         }
@@ -91,10 +97,10 @@ public class UserDAO extends DBContext {
 
     // ===== ADMIN USER MANAGEMENT =====
 
-    // 3. Lấy danh sách tất cả users (không gồm admin)
+    // 3. Lấy danh sách tất cả users
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
-        String sql = "SELECT * FROM users WHERE role != 'admin' ORDER BY id DESC";
+        String sql = "SELECT * FROM users WHERE is_deleted = 0 ORDER BY id DESC";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ResultSet rs = ps.executeQuery();
@@ -107,9 +113,36 @@ public class UserDAO extends DBContext {
         return list;
     }
 
+    public void updateRole(int id, String role) {
+        String sql = "UPDATE users SET role = ? WHERE id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, role);
+            ps.setInt(2, id);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    // Admin RBAC
+    public void updateAdminRole(int id, Integer adminRoleId) {
+        String sql = "UPDATE users SET admin_role_id = ? WHERE id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (adminRoleId == null) {
+                ps.setNull(1, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(1, adminRoleId);
+            }
+            ps.setInt(2, id);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     // 4. Lấy user theo ID
     public User getUserById(int id) {
-        String sql = "SELECT * FROM users WHERE id = ?";
+        String sql = "SELECT * FROM users WHERE id = ? AND is_deleted = 0";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -123,9 +156,9 @@ public class UserDAO extends DBContext {
         return null;
     }
 
-    // 5. Xóa user
+    // 5. Xóa user (Soft Delete)
     public void deleteUser(int id) {
-        String sql = "DELETE FROM users WHERE id = ? AND role != 'admin'";
+        String sql = "UPDATE users SET is_deleted = 1 WHERE id = ? AND role != 'admin'";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -134,6 +167,86 @@ public class UserDAO extends DBContext {
             e.printStackTrace();
         }
     }
+
+    // Admin: Lấy user đã xóa (Thùng rác)
+    public List<User> getDeletedUsers() {
+        List<User> list = new ArrayList<>();
+        String sql = "SELECT * FROM users WHERE is_deleted = 1 ORDER BY id DESC";
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapUserFromResultSet(rs));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // Admin: Khôi phục user
+    public void restoreUser(int id) {
+        String sql = "UPDATE users SET is_deleted = 0 WHERE id = ?";
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // --- BULK ACTIONS ---
+    private String buildInClause(int size) {
+        StringBuilder sb = new StringBuilder("(");
+        for (int i = 0; i < size; i++) {
+            sb.append("?");
+            if (i < size - 1) sb.append(",");
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    public void bulkDeleteUsers(String[] ids) {
+        if (ids == null || ids.length == 0) return;
+        // Chú ý: Cấm xóa role = admin giống như hàm deleteUser(int)
+        String sql = "UPDATE users SET is_deleted = 1 WHERE role != 'admin' AND id IN " + buildInClause(ids.length);
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < ids.length; i++) {
+                ps.setInt(i + 1, Integer.parseInt(ids[i]));
+            }
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void bulkRestoreUsers(String[] ids) {
+        if (ids == null || ids.length == 0) return;
+        String sql = "UPDATE users SET is_deleted = 0 WHERE id IN " + buildInClause(ids.length);
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < ids.length; i++) {
+                ps.setInt(i + 1, Integer.parseInt(ids[i]));
+            }
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void bulkDeletePermanentUsers(String[] ids) {
+        if (ids == null || ids.length == 0) return;
+        String sql = "DELETE FROM users WHERE role != 'admin' AND id IN " + buildInClause(ids.length);
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < ids.length; i++) {
+                ps.setInt(i + 1, Integer.parseInt(ids[i]));
+            }
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    // --- END BULK ACTIONS ---
 
     // ===== UPDATE PASSWORD (cho auto-migration MD5 → Argon2) =====
 
@@ -159,7 +272,7 @@ public class UserDAO extends DBContext {
      * Tìm user theo email (dùng cho Google/Facebook login)
      */
     public User findByEmail(String email) {
-        String sql = "SELECT * FROM Users WHERE email = ?";
+        String sql = "SELECT * FROM Users WHERE email = ? AND is_deleted = 0";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
@@ -181,11 +294,9 @@ public class UserDAO extends DBContext {
         // Kiểm tra email đã tồn tại chưa
         User existing = findByEmail(email);
         if (existing != null) {
-            System.out.println("[Social Login] User đã tồn tại: " + email + " (id=" + existing.getId() + ")");
             return existing; // Đã có → trả về user hiện tại
         }
 
-        System.out.println("[Social Login] Tạo user mới: email=" + email + ", name=" + fullName + ", provider=" + provider);
 
         String sql = "INSERT INTO Users (username, email, password, full_name, phone, role, wallet, note) VALUES (?, ?, ?, ?, ?, 'CUSTOMER', 0, ?)";
         try (Connection conn = getConnection();
@@ -197,13 +308,11 @@ public class UserDAO extends DBContext {
             ps.setString(5, ""); // Không có phone
             ps.setString(6, "Đăng ký qua " + provider);
             int rows = ps.executeUpdate();
-            System.out.println("[Social Login] INSERT rows affected: " + rows);
 
             if (rows > 0) {
                 // Lấy user vừa tạo bằng email
                 User newUser = findByEmail(email);
                 if (newUser != null) {
-                    System.out.println("[Social Login] Tạo thành công user id=" + newUser.getId());
                 }
                 return newUser;
             }
@@ -248,6 +357,29 @@ public class UserDAO extends DBContext {
             if (dob != null) {
                 user.setDateOfBirth(dob.toString()); // yyyy-MM-dd
             }
+            
+            // Đọc avatar
+            try {
+                user.setAvatar(rs.getString("avatar"));
+            } catch (Exception ignoredAvatar) {}
+            
+            // Đọc admin_role_id
+            int adminRoleId = rs.getInt("admin_role_id");
+            if (!rs.wasNull()) {
+                user.setAdminRoleId(adminRoleId);
+                
+                // Nếu là Admin thì load Permissions
+                if ("admin".equalsIgnoreCase(role)) {
+                    PermissionDAO permDAO = new PermissionDAO();
+                    java.util.List<model.Permission> perms = permDAO.getPermissionsByRoleId(adminRoleId);
+                    java.util.Set<String> permIds = new java.util.HashSet<>();
+                    for (model.Permission p : perms) {
+                        permIds.add(p.getId());
+                    }
+                    user.setPermissions(permIds);
+                }
+            }
+            
         } catch (Exception ignored) {
             // Cột chưa tồn tại trong DB → bỏ qua
         }
@@ -273,6 +405,42 @@ public class UserDAO extends DBContext {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    // ===== UPDATE AVATAR =====
+
+    public boolean updateAvatar(int userId, String avatarPath) {
+        ensureAvatarColumn();
+        String sql = "UPDATE Users SET avatar = ? WHERE id = ?";
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, avatarPath);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private void ensureAvatarColumn() {
+        String checkSql = "SELECT COL_LENGTH('Users', 'avatar')";
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(checkSql)) {
+            ResultSet rs = ps.executeQuery();
+            if (rs.next() && rs.getObject(1) != null) {
+                return; // Column already exists
+            }
+        } catch (Exception e) {
+            // Column doesn't exist, add it
+        }
+        String addSql = "ALTER TABLE Users ADD avatar NVARCHAR(500) NULL";
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(addSql)) {
+            ps.executeUpdate();
+        } catch (Exception e) {
+            // May already exist
         }
     }
 }

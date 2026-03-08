@@ -67,13 +67,15 @@ public class SearchServlet extends HttpServlet {
         List<ProductDTO> products = productDao.searchProducts(txtSearch, cateIds, locations, minPriceStr, maxPriceStr,
                 ratingStr, sortBy, page);
 
-        // 5. Might need categories for header/sidebar menu
+        // 5. Lấy danh mục liên quan (smart filter) + tất cả danh mục cho header
         CategoryDAO categoryDao = new CategoryDAO();
-        List<Category> categories = categoryDao.getAllCategories();
+        List<Category> relevantCategories = categoryDao.getRelevantCategories(txtSearch);
+        List<Category> allCategories = categoryDao.getAllCategories();
 
         // 6. Set attributes for JSP
         request.setAttribute("products", products);
-        request.setAttribute("categories", categories);
+        request.setAttribute("categories", relevantCategories);
+        request.setAttribute("allCategories", allCategories);
         request.setAttribute("txtS", txtSearch);
         request.setAttribute("sortBy", sortBy);
         request.setAttribute("currentPage", page);

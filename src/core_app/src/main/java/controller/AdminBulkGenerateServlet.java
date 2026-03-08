@@ -38,6 +38,14 @@ public class AdminBulkGenerateServlet extends HttpServlet {
             request.setAttribute("logs", logs);
             request.setAttribute("generatedCount", count);
 
+            // Ghi nhật ký hệ thống
+            jakarta.servlet.http.HttpSession session = request.getSession();
+            model.User admin = (model.User) session.getAttribute("account");
+            int adminId = (admin != null) ? admin.getId() : 1;
+            
+            dal.AuditLogDAO audit = new dal.AuditLogDAO();
+            audit.insertLog(adminId, "CREATE", "products", "-", "Tự động tạo " + count + " sản phẩm và biến thể");
+
         } catch (NumberFormatException e) {
             request.setAttribute("logs", "❌ Số lượng không hợp lệ: " + e.getMessage());
         } catch (Exception e) {

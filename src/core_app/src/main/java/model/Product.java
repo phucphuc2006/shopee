@@ -11,8 +11,21 @@ public class Product {
     private BigDecimal price;
     private String imageUrl;
     private Timestamp createdAt;
+    private int categoryId;
 
     public Product() {
+    }
+
+    public Product(int id, int shopId, String name, String description, BigDecimal price, String imageUrl,
+            Timestamp createdAt, int categoryId) {
+        this.id = id;
+        this.shopId = shopId;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.imageUrl = imageUrl;
+        this.createdAt = createdAt;
+        this.categoryId = categoryId;
     }
 
     public Product(int id, int shopId, String name, String description, BigDecimal price, String imageUrl,
@@ -24,6 +37,15 @@ public class Product {
         this.price = price;
         this.imageUrl = imageUrl;
         this.createdAt = createdAt;
+        this.categoryId = 1; // Default
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
     }
 
     public int getId() {
@@ -67,7 +89,7 @@ public class Product {
     }
 
     public String getImageUrl() {
-        return imageUrl;
+        return util.ProductImageUtil.getRelevantImageUrl(this.name, this.imageUrl);
     }
 
     public void setImageUrl(String imageUrl) {
