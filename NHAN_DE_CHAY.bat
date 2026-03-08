@@ -1,287 +1,182 @@
 @echo off
-chcp 65001 >nul
-title ShopeeWeb - Cai Dat - Chay Tu Dong (FULL AUTO)
+title ShopeeWeb - Auto Setup
 color 0B
 setlocal EnableDelayedExpansion
 
 :: ============================================
-:: Yêu cầu quyền Admin (cần để cài phần mềm)
+:: Yeu cau quyen Admin
 :: ============================================
 net session >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    echo  🔒 Cần quyền Administrator để cài đặt phần mềm...
-    echo     Đang yêu cầu quyền Admin...
+    echo  [!] Can quyen Administrator...
     powershell -Command "Start-Process -FilePath '%~f0' -Verb RunAs"
     exit /b
 )
 
-:: ============================================
-:: Di chuyển vào thư mục chứa file .bat này
-:: ============================================
 cd /d "%~dp0"
 set "PROJECT_ROOT=%cd%"
 
 echo.
-echo  ╔══════════════════════════════════════════════════════════╗
-echo  ║                                                          ║
-echo  ║     🛒  SHOPEE WEB - CÀI ĐẶT TỰ ĐỘNG HOÀN TOÀN  🛒  ║
-echo  ║                                                          ║
-echo  ║   Ngồi uống cafe - Script lo hết!                       ║
-echo  ║                                                          ║
-echo  ╚══════════════════════════════════════════════════════════╝
-echo.
-echo  Thư mục project: %PROJECT_ROOT%
-echo.
-echo ═══════════════════════════════════════════════════════════
-
-:: ============================================
-:: BƯỚC 0: KIỂM TRA & TỰ ĐỘNG CÀI PHẦN MỀM
-:: ============================================
-echo.
-echo  [0/9] 🔍 Đang kiểm tra và cài đặt phần mềm tự động...
+echo  ========================================================
+echo        SHOPEE WEB - CAI DAT TU DONG HOAN TOAN
+echo  ========================================================
+echo  Thu muc project: %PROJECT_ROOT%
+echo  ========================================================
 echo.
 
-:: ─── Kiểm tra winget ───
+:: ============================================
+:: BUOC 0: KIEM TRA PHAN MEM
+:: ============================================
+echo  [0/9] Kiem tra va cai dat phan mem...
+echo.
+
 set "HAS_WINGET=0"
 where winget >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    set "HAS_WINGET=1"
-    echo  ✅ Windows Package Manager ^(winget^): Có sẵn
-) else (
-    echo  ⚠️  winget không có - sẽ thử phương pháp cài đặt thay thế
-)
+if %ERRORLEVEL% EQU 0 set "HAS_WINGET=1"
 
-:: ═══════════════════════════════════════════
-:: KIỂM TRA & CÀI JAVA JDK 17
-:: ═══════════════════════════════════════════
-echo.
-echo  ── Kiểm tra Java JDK ──
+:: --- Java JDK ---
+echo  -- Kiem tra Java JDK --
 java -version >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    echo  ❌ Java chưa cài đặt. Đang tự động cài JDK 17...
-    if "%HAS_WINGET%"=="1" (
-        echo     📦 Cài đặt qua winget...
+    echo  [X] Java chua cai. Dang cai JDK 17...
+    if "!HAS_WINGET!"=="1" (
         winget install --id EclipseAdoptium.Temurin.17.JDK --silent --accept-package-agreements --accept-source-agreements
-        if !ERRORLEVEL! EQU 0 (
-            echo  ✅ Đã cài đặt JDK 17 thành công!
-        ) else (
-            echo  ⚠️  winget cài JDK thất bại, thử Corretto...
+        if !ERRORLEVEL! NEQ 0 (
             winget install --id Amazon.Corretto.17 --silent --accept-package-agreements --accept-source-agreements
-            if !ERRORLEVEL! EQU 0 (
-                echo  ✅ Đã cài đặt Amazon Corretto 17 thành công!
-            ) else (
-                echo  ❌ Không thể cài JDK tự động.
-                echo     → Tải thủ công: https://adoptium.net/
-                pause
-                exit /b 1
-            )
         )
+        call :REFRESH_PATH
     ) else (
-        echo  ❌ Không thể cài JDK tự động ^(không có winget^).
-        echo     → Tải thủ công: https://adoptium.net/
+        echo  [X] Khong the cai JDK tu dong.
+        echo     Tai thu cong: https://adoptium.net/
         pause
         exit /b 1
     )
-    rem Refresh PATH sau khi cài
-    call :REFRESH_PATH
 ) else (
-    echo  ✅ Java: Đã cài đặt
+    echo  [OK] Java da cai
 )
 
-:: ═══════════════════════════════════════════
-:: KIỂM TRA & CÀI MAVEN
-:: ═══════════════════════════════════════════
+:: --- Maven ---
 echo.
-echo  ── Kiểm tra Apache Maven ──
-set "MVN_CMD=mvn.cmd"
+echo  -- Kiem tra Apache Maven --
+set "MVN_CMD=mvn"
 where mvn >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    rem Kiểm tra các vị trí phổ biến
     if exist "C:\maven\bin\mvn.cmd" (
         set "MVN_CMD=C:\maven\bin\mvn.cmd"
-        echo  ✅ Maven: Đã cài đặt ^(C:\maven^)
-    ) else if exist "C:\Program Files\apache-maven\bin\mvn.cmd" (
-        set "MVN_CMD=C:\Program Files\apache-maven\bin\mvn.cmd"
-        echo  ✅ Maven: Đã cài đặt
+        echo  [OK] Maven: C:\maven
     ) else (
-        echo  ❌ Maven chưa cài đặt. Đang tự động cài...
-        
-        rem Tải Maven bằng PowerShell
+        echo  [X] Maven chua cai. Dang tai...
         set "MAVEN_VER=3.9.9"
         set "MAVEN_URL=https://dlcdn.apache.org/maven/maven-3/!MAVEN_VER!/binaries/apache-maven-!MAVEN_VER!-bin.zip"
         set "MAVEN_ZIP=%TEMP%\maven.zip"
-        set "MAVEN_DIR=C:\maven"
-        
-        echo     📥 Đang tải Apache Maven !MAVEN_VER!...
         powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '!MAVEN_URL!' -OutFile '!MAVEN_ZIP!'" >nul 2>&1
-        
         if exist "!MAVEN_ZIP!" (
-            echo     📂 Đang giải nén...
             powershell -NoProfile -Command "Expand-Archive -Path '!MAVEN_ZIP!' -DestinationPath 'C:\' -Force" >nul 2>&1
-            
-            rem Rename thư mục
             if exist "C:\apache-maven-!MAVEN_VER!" (
                 if exist "C:\maven" rmdir /s /q "C:\maven" >nul 2>&1
                 ren "C:\apache-maven-!MAVEN_VER!" "maven" >nul 2>&1
             )
-            
-            rem Thêm vào PATH hệ thống
             if exist "C:\maven\bin\mvn.cmd" (
-                powershell -NoProfile -Command "$oldPath = [Environment]::GetEnvironmentVariable('PATH', 'Machine'); if ($oldPath -notlike '*C:\maven\bin*') { [Environment]::SetEnvironmentVariable('PATH', $oldPath + ';C:\maven\bin', 'Machine') }"
                 set "MVN_CMD=C:\maven\bin\mvn.cmd"
-                set "PATH=%PATH%;C:\maven\bin"
-                echo  ✅ Đã cài đặt Maven thành công!
+                set "PATH=!PATH!;C:\maven\bin"
+                echo  [OK] Maven cai thanh cong
             ) else (
-                echo  ❌ Cài Maven thất bại.
-                echo     → Tải thủ công: https://maven.apache.org/download.cgi
+                echo  [X] Cai Maven that bai.
                 pause
                 exit /b 1
             )
             del /f /q "!MAVEN_ZIP!" >nul 2>&1
         ) else (
-            echo  ❌ Không thể tải Maven. Kiểm tra kết nối Internet.
+            echo  [X] Khong the tai Maven.
             pause
             exit /b 1
         )
     )
 ) else (
-    echo  ✅ Maven: Đã cài đặt
+    echo  [OK] Maven da cai
 )
 
-:: ═══════════════════════════════════════════
-:: KIỂM TRA & CÀI PYTHON
-:: ═══════════════════════════════════════════
+:: --- Python ---
 echo.
-echo  ── Kiểm tra Python ──
+echo  -- Kiem tra Python --
 set "HAS_PYTHON=0"
 set "PYTHON_CMD=python"
 python --version >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     py --version >nul 2>&1
-    if %ERRORLEVEL% NEQ 0 (
-        echo  ❌ Python chưa cài đặt. Đang tự động cài...
-        if "%HAS_WINGET%"=="1" (
-            winget install --id Python.Python.3.12 --silent --accept-package-agreements --accept-source-agreements
-            if !ERRORLEVEL! EQU 0 (
-                echo  ✅ Đã cài đặt Python 3.12 thành công!
-                call :REFRESH_PATH
-                set "HAS_PYTHON=1"
-            ) else (
-                echo  ⚠️  Không thể cài Python tự động - bỏ qua bước sinh dữ liệu
-            )
-        ) else (
-            echo  ⚠️  Không thể cài Python tự động - bỏ qua bước sinh dữ liệu
-            echo     → Tải thủ công: https://www.python.org/downloads/
-        )
-    ) else (
+    if !ERRORLEVEL! EQU 0 (
         set "PYTHON_CMD=py"
         set "HAS_PYTHON=1"
-        echo  ✅ Python: Đã cài đặt
+        echo  [OK] Python da cai
+    ) else (
+        echo  [!] Python chua cai - bo qua buoc sinh du lieu
+        if "!HAS_WINGET!"=="1" (
+            winget install --id Python.Python.3.12 --silent --accept-package-agreements --accept-source-agreements >nul 2>&1
+            call :REFRESH_PATH
+            python --version >nul 2>&1
+            if !ERRORLEVEL! EQU 0 set "HAS_PYTHON=1"
+        )
     )
 ) else (
     set "HAS_PYTHON=1"
-    echo  ✅ Python: Đã cài đặt
+    echo  [OK] Python da cai
 )
 
-:: ═══════════════════════════════════════════
-:: KIỂM TRA & CÀI SQL SERVER EXPRESS
-:: ═══════════════════════════════════════════
+:: --- SQL Server ---
 echo.
-echo  ── Kiểm tra SQL Server ──
-
-:: Kiểm tra xem có SQL Server service nào không
+echo  -- Kiem tra SQL Server --
 set "HAS_SQL_SERVICE=0"
 sc query state= all 2>nul | findstr /i "MSSQL" >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     set "HAS_SQL_SERVICE=1"
-    echo  ✅ SQL Server: Đã cài đặt
+    echo  [OK] SQL Server da cai
 ) else (
-    echo  ❌ SQL Server chưa cài đặt. Đang tự động cài SQL Server Express...
-    
-    set "SQL_INSTALLED=0"
-    if "%HAS_WINGET%"=="1" (
-        echo     📦 Cài đặt SQL Server 2022 Express qua winget...
-        echo     ⏳ Quá trình này có thể mất 5-10 phút, vui lòng chờ...
+    echo  [X] SQL Server chua cai. Dang cai...
+    if "!HAS_WINGET!"=="1" (
         winget install --id Microsoft.SQLServer.2022.Express --silent --accept-package-agreements --accept-source-agreements
-        if !ERRORLEVEL! EQU 0 (
-            set "SQL_INSTALLED=1"
-            set "HAS_SQL_SERVICE=1"
-            echo  ✅ Đã cài đặt SQL Server 2022 Express thành công!
-        ) else (
-            echo  ⚠️  winget cài SQL Server thất bại. Thử phiên bản 2019...
+        if !ERRORLEVEL! NEQ 0 (
             winget install --id Microsoft.SQLServer.2019.Express --silent --accept-package-agreements --accept-source-agreements
-            if !ERRORLEVEL! EQU 0 (
-                set "SQL_INSTALLED=1"
-                set "HAS_SQL_SERVICE=1"
-                echo  ✅ Đã cài đặt SQL Server 2019 Express thành công!
-            )
         )
-    )
-    
-    if "!SQL_INSTALLED!"=="0" (
-        echo  ❌ Không thể cài SQL Server tự động.
-        echo     → Tải thủ công: https://www.microsoft.com/en-us/sql-server/sql-server-downloads
-        echo     → Chọn phiên bản Express ^(miễn phí^)
+        set "HAS_SQL_SERVICE=1"
+    ) else (
+        echo  [X] Khong the cai SQL Server tu dong.
+        echo     Tai: https://www.microsoft.com/en-us/sql-server/sql-server-downloads
         pause
         exit /b 1
     )
 )
 
-:: ═══════════════════════════════════════════
-:: CẤU HÌNH SQL SERVER TỰ ĐỘNG
-:: ═══════════════════════════════════════════
+:: ============================================
+:: CAU HINH SQL SERVER
+:: ============================================
 echo.
-echo  ── Tự động cấu hình SQL Server ──
+echo  -- Cau hinh SQL Server --
 
-:: Tìm instance name
+:: Tim instance
 set "SQL_INSTANCE="
 set "SQL_SVC_NAME="
 for /f "tokens=2 delims=: " %%N in ('sc query state^= all ^| findstr /i "SERVICE_NAME.*MSSQL"') do (
-    set "TEMP_SVC=%%N"
-    rem Kiểm tra nếu service đang chạy
-    sc query "%%N" 2>nul | findstr /i "RUNNING" >nul 2>&1
-    if !ERRORLEVEL! EQU 0 (
-        if "!SQL_SVC_NAME!"=="" (
-            set "SQL_SVC_NAME=%%N"
-            if /i "%%N"=="MSSQLSERVER" (
-                set "SQL_INSTANCE="
-                echo     Instance: Default ^(MSSQLSERVER^) - ĐANG CHẠY
-            ) else (
-                for /f "tokens=2 delims=$" %%I in ("%%N") do (
-                    set "SQL_INSTANCE=%%I"
-                    echo     Instance: %%I - ĐANG CHẠY
-                )
-            )
+    if "!SQL_SVC_NAME!"=="" (
+        set "SQL_SVC_NAME=%%N"
+        if /i "%%N"=="MSSQLSERVER" (
+            set "SQL_INSTANCE="
+        ) else (
+            for /f "tokens=2 delims=$" %%I in ("%%N") do set "SQL_INSTANCE=%%I"
         )
     )
 )
 
-:: Nếu không có instance nào chạy, thử start
-if "!SQL_SVC_NAME!"=="" (
-    echo     ⚠️  SQL Server không chạy. Đang khởi động...
-    for /f "tokens=2 delims=: " %%N in ('sc query state^= all ^| findstr /i "SERVICE_NAME.*MSSQL"') do (
-        if "!SQL_SVC_NAME!"=="" (
-            set "SQL_SVC_NAME=%%N"
-            net start "%%N" >nul 2>&1
-            if /i "%%N"=="MSSQLSERVER" (
-                set "SQL_INSTANCE="
-            ) else (
-                for /f "tokens=2 delims=$" %%I in ("%%N") do set "SQL_INSTANCE=%%I"
-            )
-            
-            rem Đợi service khởi động
-            timeout /t 5 /nobreak >nul
-            sc query "%%N" 2>nul | findstr /i "RUNNING" >nul 2>&1
-            if !ERRORLEVEL! EQU 0 (
-                echo     ✅ Đã khởi động SQL Server: %%N
-            ) else (
-                echo     ❌ Không thể khởi động SQL Server: %%N
-            )
-        )
+:: Start service neu can
+if "!SQL_SVC_NAME!" NEQ "" (
+    sc query "!SQL_SVC_NAME!" 2>nul | findstr /i "RUNNING" >nul 2>&1
+    if !ERRORLEVEL! NEQ 0 (
+        echo     Starting SQL Server...
+        net start "!SQL_SVC_NAME!" >nul 2>&1
+        timeout /t 5 /nobreak >nul
     )
 )
 
-:: Xác định server connection string
+:: Server string
 if "!SQL_INSTANCE!"=="" (
     set "SQL_SERVER=localhost"
 ) else (
@@ -289,554 +184,318 @@ if "!SQL_INSTANCE!"=="" (
 )
 echo     Server: !SQL_SERVER!
 
-:: ─── Bật SQL Server Authentication Mode (Mixed Mode) ───
-echo.
-echo     🔧 Đang cấu hình SQL Server Authentication...
-
-:: Xác định registry path cho instance
+:: Registry instance name
 if "!SQL_INSTANCE!"=="" (
     set "REG_INSTANCE=MSSQLSERVER"
 ) else (
     set "REG_INSTANCE=!SQL_INSTANCE!"
 )
 
-:: Bật Mixed Authentication Mode qua Registry
+:: Bat Mixed Auth Mode
 reg add "HKLM\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL16.!REG_INSTANCE!\MSSQLServer" /v LoginMode /t REG_DWORD /d 2 /f >nul 2>&1
 if !ERRORLEVEL! NEQ 0 (
-    rem Thử các phiên bản SQL Server khác
     reg add "HKLM\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL15.!REG_INSTANCE!\MSSQLServer" /v LoginMode /t REG_DWORD /d 2 /f >nul 2>&1
-    if !ERRORLEVEL! NEQ 0 (
-        reg add "HKLM\SOFTWARE\Microsoft\Microsoft SQL Server\MSSQL14.!REG_INSTANCE!\MSSQLServer" /v LoginMode /t REG_DWORD /d 2 /f >nul 2>&1
-    )
 )
-echo     ✅ Đã bật SQL Server Authentication Mode (Mixed Mode)
+echo     [OK] Mixed Auth Mode
 
-:: ─── Bật TCP/IP ───
-echo     🔧 Đang bật TCP/IP...
-powershell -NoProfile -Command "try { Import-Module SQLPS -DisableNameChecking -ErrorAction SilentlyContinue; $wmi = New-Object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer; $tcp = $wmi.ServerInstances['!REG_INSTANCE!'].ServerProtocols['Tcp']; $tcp.IsEnabled = $true; $tcp.Alter(); exit 0 } catch { exit 1 }" >nul 2>&1
-if !ERRORLEVEL! NEQ 0 (
-    rem Thử bật TCP/IP qua Registry trực tiếp
-    for /f "tokens=*" %%K in ('reg query "HKLM\SOFTWARE\Microsoft\Microsoft SQL Server" /s /f "SuperSocketNetLib\Tcp" /k 2^>nul ^| findstr /i "SuperSocketNetLib\\Tcp$"') do (
-        reg add "%%K" /v Enabled /t REG_DWORD /d 1 /f >nul 2>&1
-    )
+:: Bat TCP/IP qua Registry
+for /f "tokens=*" %%K in ('reg query "HKLM\SOFTWARE\Microsoft\Microsoft SQL Server" /s /f "SuperSocketNetLib\Tcp" /k 2^>nul ^| findstr /i "SuperSocketNetLib\\Tcp$"') do (
+    reg add "%%K" /v Enabled /t REG_DWORD /d 1 /f >nul 2>&1
 )
-echo     ✅ Đã bật TCP/IP Protocol
+echo     [OK] TCP/IP Enabled
 
-:: ─── Cấu hình tài khoản SA ───
-echo     🔧 Đang cấu hình tài khoản SA...
-
+:: Restart SQL Server
 set "SA_PASS=zxczxc123"
-
-:: Dùng sqlcmd để enable SA và đặt password
-where sqlcmd >nul 2>&1
-set "HAS_SQLCMD=0"
-if %ERRORLEVEL% EQU 0 set "HAS_SQLCMD=1"
-
-:: Restart SQL Server để áp dụng Mixed Mode
-echo     🔄 Đang restart SQL Server để áp dụng cấu hình...
+echo     Restarting SQL Server...
 net stop "!SQL_SVC_NAME!" >nul 2>&1
 timeout /t 3 /nobreak >nul
 net start "!SQL_SVC_NAME!" >nul 2>&1
 timeout /t 5 /nobreak >nul
 
-:: Kích hoạt SA bằng Windows Auth (vì Mixed Mode vừa bật)
-if "%HAS_SQLCMD%"=="1" (
+:: Kiem tra sqlcmd
+set "HAS_SQLCMD=0"
+where sqlcmd >nul 2>&1
+if !ERRORLEVEL! EQU 0 set "HAS_SQLCMD=1"
+
+:: Kich hoat SA
+if "!HAS_SQLCMD!"=="1" (
     sqlcmd -S !SQL_SERVER! -E -C -Q "ALTER LOGIN [sa] ENABLE; ALTER LOGIN [sa] WITH PASSWORD = '!SA_PASS!'; ALTER LOGIN [sa] WITH CHECK_POLICY = OFF;" -b >nul 2>&1
-    if !ERRORLEVEL! EQU 0 (
-        echo     ✅ Đã kích hoạt tài khoản SA ^(password: !SA_PASS!^)
-    ) else (
-        echo     ⚠️  SA có thể đã được cấu hình trước đó
-    )
 ) else (
-    rem Dùng PowerShell nếu không có sqlcmd
-    powershell -NoProfile -Command "try { $conn = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;Integrated Security=True;TrustServerCertificate=True;'); $conn.Open(); $cmd = $conn.CreateCommand(); $cmd.CommandText = 'ALTER LOGIN [sa] ENABLE; ALTER LOGIN [sa] WITH PASSWORD = ''!SA_PASS!''; ALTER LOGIN [sa] WITH CHECK_POLICY = OFF;'; $cmd.ExecuteNonQuery(); $conn.Close(); exit 0 } catch { exit 1 }" >nul 2>&1
-    if !ERRORLEVEL! EQU 0 (
-        echo     ✅ Đã kích hoạt tài khoản SA ^(password: !SA_PASS!^)
-    ) else (
-        echo     ⚠️  SA có thể đã được cấu hình trước đó
-    )
+    powershell -NoProfile -Command "try { $c = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;Integrated Security=True;TrustServerCertificate=True'); $c.Open(); $q = $c.CreateCommand(); $q.CommandText = 'ALTER LOGIN [sa] ENABLE; ALTER LOGIN [sa] WITH PASSWORD = ''!SA_PASS!''; ALTER LOGIN [sa] WITH CHECK_POLICY = OFF'; $q.ExecuteNonQuery(); $c.Close() } catch {}" >nul 2>&1
 )
 
-:: ─── Kiểm tra kết nối SA ───
+:: Thu ket noi voi cac password
 echo.
-echo     🔗 Đang kiểm tra kết nối SA...
-
+echo     Dang kiem tra ket noi SA...
 set "DB_PASS="
 set "FOUND_SQL=0"
 
-:: Danh sách mật khẩu để thử
-set "PASS_1=zxczxc123"
-set "PASS_2=123456"
-set "PASS_3=sa"
-set "PASS_4=1"
-set "PASS_5=admin"
-set "PASS_6=Sa123456"
-set "PASS_7=P@ssw0rd"
-set "PASS_COUNT=7"
-
-:: Thử từng mật khẩu
-for /L %%P in (1,1,%PASS_COUNT%) do (
+for %%P in (zxczxc123 123456 sa 1 admin Sa123456) do (
     if "!FOUND_SQL!"=="0" (
-        set "TRY_PASS=!PASS_%%P!"
-        if "%HAS_SQLCMD%"=="1" (
-            sqlcmd -S !SQL_SERVER! -U sa -P !TRY_PASS! -C -Q "SELECT 1" -b -l 5 >nul 2>&1
+        if "!HAS_SQLCMD!"=="1" (
+            sqlcmd -S !SQL_SERVER! -U sa -P %%P -C -Q "SELECT 1" -b -l 5 >nul 2>&1
         ) else (
-            powershell -NoProfile -Command "try { $conn = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!TRY_PASS!;TrustServerCertificate=True;Connection Timeout=5'); $conn.Open(); $conn.Close(); exit 0 } catch { exit 1 }" >nul 2>&1
+            powershell -NoProfile -Command "try { $c = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=%%P;TrustServerCertificate=True;Connection Timeout=5'); $c.Open(); $c.Close(); exit 0 } catch { exit 1 }" >nul 2>&1
         )
         if !ERRORLEVEL! EQU 0 (
-            set "DB_PASS=!TRY_PASS!"
+            set "DB_PASS=%%P"
             set "FOUND_SQL=1"
-            echo     ✅ Kết nối thành công: !SQL_SERVER! ^(pass: !TRY_PASS!^)
+            echo     [OK] Ket noi thanh cong voi pass: %%P
         )
     )
 )
 
-:: Nếu vẫn không kết nối được
 if "!FOUND_SQL!"=="0" (
-    echo     ❌ Không thể kết nối SQL Server bằng SA.
-    echo.
+    echo     [X] Khong the ket noi SQL Server.
     set "DB_PASS=zxczxc123"
-    set /p "DB_PASS=     👉 Nhập mật khẩu SA (Enter = zxczxc123): "
+    set /p "DB_PASS=     Nhap mat khau SA [Enter = zxczxc123]: "
 )
 
 echo.
-echo  ✅ Hoàn tất kiểm tra phần mềm!
-echo.
-echo ═══════════════════════════════════════════════════════════
+echo  [OK] Hoan tat kiem tra phan mem!
+echo  ========================================================
 
 :: ============================================
-:: BƯỚC 1: CẬP NHẬT db.properties
+:: BUOC 1: CAP NHAT db.properties
 :: ============================================
 echo.
-echo  [1/9] 📝 Đang cập nhật cấu hình kết nối...
-echo.
-echo  📋 Cấu hình:
-echo     Server:   !SQL_SERVER!
-echo     Instance: !SQL_INSTANCE!
-echo     Password: !DB_PASS!
-echo.
+echo  [1/9] Cap nhat db.properties...
 
-:: Tạo db.properties tự động
-echo # CAU HINH KET NOI SQL SERVER (TU DONG PHAT HIEN)> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
+set "DB_PROPS=%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
+
+echo # DATABASE CONFIG - AUTO GENERATED> "!DB_PROPS!"
 if "!SQL_INSTANCE!"=="" (
-    echo db.url=jdbc:sqlserver://localhost:1433;databaseName=shopeeweb_lab211;encrypt=true;trustServerCertificate=true;>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
+    echo db.url=jdbc:sqlserver://localhost:1433;databaseName=shopeeweb_lab211;encrypt=true;trustServerCertificate=true;>> "!DB_PROPS!"
 ) else (
-    echo db.url=jdbc:sqlserver://localhost;instanceName=!SQL_INSTANCE!;databaseName=shopeeweb_lab211;encrypt=true;trustServerCertificate=true;>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
+    echo db.url=jdbc:sqlserver://localhost;instanceName=!SQL_INSTANCE!;databaseName=shopeeweb_lab211;encrypt=true;trustServerCertificate=true;>> "!DB_PROPS!"
 )
-echo db.user=sa>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
-echo db.password=!DB_PASS!>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
-echo.>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
-echo # GOOGLE OAUTH 2.0>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
-if exist "%PROJECT_ROOT%\google_oauth.config" (
-    for /f "tokens=1,2 delims==" %%A in ('type "%PROJECT_ROOT%\google_oauth.config"') do (
-        if "%%A"=="CLIENT_ID" echo google.client.id=%%B>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
-        if "%%A"=="CLIENT_SECRET" echo google.client.secret=%%B>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
-    )
-    echo  ✅ Đã thêm Google OAuth config từ google_oauth.config
+echo db.user=sa>> "!DB_PROPS!"
+echo db.password=!DB_PASS!>> "!DB_PROPS!"
+echo.>> "!DB_PROPS!"
+echo # GOOGLE OAUTH>> "!DB_PROPS!"
+echo google.client.id=>> "!DB_PROPS!"
+echo google.client.secret=>> "!DB_PROPS!"
+echo # FACEBOOK OAUTH>> "!DB_PROPS!"
+echo facebook.app.id=>> "!DB_PROPS!"
+echo facebook.app.secret=>> "!DB_PROPS!"
+
+echo  [OK] db.properties da cap nhat
+echo  ========================================================
+
+:: ============================================
+:: BUOC 2: TAO DATABASE
+:: ============================================
+echo.
+echo  [2/9] Tao Database va cac bang...
+
+set "SQL_CREATE=IF NOT EXISTS (SELECT * FROM sys.databases WHERE name='shopeeweb_lab211') CREATE DATABASE shopeeweb_lab211"
+
+if "!HAS_SQLCMD!"=="1" (
+    sqlcmd -S !SQL_SERVER! -U sa -P !DB_PASS! -C -Q "!SQL_CREATE!" -b >nul 2>&1
 ) else (
-    echo google.client.id=>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
-    echo google.client.secret=>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
-    echo  ⚠️  Chưa có file google_oauth.config - Google Login sẽ không hoạt động
-    echo     Tạo file google_oauth.config với nội dung:
-    echo     CLIENT_ID=your_google_client_id
-    echo     CLIENT_SECRET=your_google_client_secret
+    powershell -NoProfile -Command "try { $c = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;TrustServerCertificate=True'); $c.Open(); $q = $c.CreateCommand(); $q.CommandText = '!SQL_CREATE!'; $q.ExecuteNonQuery(); $c.Close() } catch {}" >nul 2>&1
 )
+echo     [OK] Database shopeeweb_lab211
 
-echo # FACEBOOK OAUTH 2.0>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
-if exist "%PROJECT_ROOT%\facebook_oauth.config" (
-    for /f "tokens=1,2 delims==" %%A in ('type "%PROJECT_ROOT%\facebook_oauth.config"') do (
-        if "%%A"=="APP_ID" echo facebook.app.id=%%B>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
-        if "%%A"=="APP_SECRET" echo facebook.app.secret=%%B>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
-    )
-    echo  ✅ Đã thêm Facebook OAuth config từ facebook_oauth.config
+:: Chay init_sqlserver.sql
+echo     Dang tao cac bang...
+if "!HAS_SQLCMD!"=="1" (
+    sqlcmd -S !SQL_SERVER! -U sa -P !DB_PASS! -C -d shopeeweb_lab211 -i "%PROJECT_ROOT%\src\core_app\init_sqlserver.sql" -b >nul 2>&1
 ) else (
-    echo facebook.app.id=>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
-    echo facebook.app.secret=>> "%PROJECT_ROOT%\src\core_app\src\main\resources\db.properties"
-    echo  ⚠️  Chưa có file facebook_oauth.config - Facebook Login sẽ không hoạt động
-    echo     Tạo file facebook_oauth.config với nội dung:
-    echo     APP_ID=your_facebook_app_id
-    echo     APP_SECRET=your_facebook_app_secret
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $c = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;Database=shopeeweb_lab211;TrustServerCertificate=True'); $c.Open(); $sql = Get-Content '!PROJECT_ROOT!\src\core_app\init_sqlserver.sql' -Raw; foreach($b in ($sql -split '\bGO\b')) { if($b.Trim()) { $q = $c.CreateCommand(); $q.CommandText = $b; $q.ExecuteNonQuery() | Out-Null } }; $c.Close() } catch {}" >nul 2>&1
 )
-echo  ✅ Đã tự động cập nhật db.properties
-
-echo.
-echo ═══════════════════════════════════════════════════════════
+echo  [OK] Da tao xong cac bang
+echo  ========================================================
 
 :: ============================================
-:: BƯỚC 2: TẠO DATABASE & BẢNG
+:: BUOC 3: SINH DU LIEU MAU
 :: ============================================
 echo.
-echo  [2/9] 🗄️  Đang tạo Database và các bảng...
-echo.
-
-set "DB_CREATED=0"
-if "%HAS_SQLCMD%"=="1" (
-    sqlcmd -S !SQL_SERVER! -U sa -P !DB_PASS! -C -Q "IF NOT EXISTS (SELECT * FROM sys.databases WHERE name='shopeeweb_lab211') CREATE DATABASE shopeeweb_lab211;" -b >nul 2>&1
-    if !ERRORLEVEL! EQU 0 (
-        set "DB_CREATED=1"
-    )
-)
-if "!DB_CREATED!"=="0" (
-    powershell -NoProfile -Command "try { $conn = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;TrustServerCertificate=True;'); $conn.Open(); $cmd = $conn.CreateCommand(); $cmd.CommandText = 'IF NOT EXISTS (SELECT * FROM sys.databases WHERE name=''shopeeweb_lab211'') CREATE DATABASE shopeeweb_lab211;'; $cmd.ExecuteNonQuery(); $conn.Close(); exit 0 } catch { exit 1 }" >nul 2>&1
-    if !ERRORLEVEL! EQU 0 (
-        set "DB_CREATED=1"
-    ) else (
-        echo  ⚠️  Không thể tạo DB tự động.
-        echo     → Mở SSMS và chạy: CREATE DATABASE shopeeweb_lab211;
-    )
-)
-
-if "!DB_CREATED!"=="1" (
-    echo  ✅ Đã tạo/xác nhận database: shopeeweb_lab211
-
-    rem Chạy script khởi tạo bảng
-    echo     Đang tạo các bảng dữ liệu...
-    if "%HAS_SQLCMD%"=="1" (
-        sqlcmd -S !SQL_SERVER! -U sa -P !DB_PASS! -C -d shopeeweb_lab211 -i "%PROJECT_ROOT%\src\core_app\init_sqlserver.sql" -b >nul 2>&1
-    ) else (
-        powershell -NoProfile -Command "try { $conn = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;Database=shopeeweb_lab211;TrustServerCertificate=True;'); $conn.Open(); $sql = Get-Content '%PROJECT_ROOT%\src\core_app\init_sqlserver.sql' -Raw; foreach($batch in ($sql -split '\bGO\b')) { if($batch.Trim()) { $cmd = $conn.CreateCommand(); $cmd.CommandText = $batch; $cmd.ExecuteNonQuery() | Out-Null } }; $conn.Close(); exit 0 } catch { exit 1 }" >nul 2>&1
-    )
-    if !ERRORLEVEL! EQU 0 (
-        echo  ✅ Đã tạo xong tất cả bảng!
-    ) else (
-        echo  ⚠️  Bảng có thể đã tồn tại - tiếp tục...
-    )
-)
-
-echo.
-echo ═══════════════════════════════════════════════════════════
-
-:: ============================================
-:: BƯỚC 3: SINH DỮ LIỆU MẪU
-:: ============================================
-echo.
-echo  [3/9] 📊 Đang kiểm tra dữ liệu mẫu...
+echo  [3/9] Kiem tra du lieu mau...
 
 if exist "%PROJECT_ROOT%\data\products.csv" (
-    echo  ✅ Dữ liệu mẫu đã có sẵn - bỏ qua!
+    echo  [OK] Du lieu mau da co san
 ) else (
-    if "%HAS_PYTHON%"=="1" (
-        echo     Đang sinh 12,000 sản phẩm mẫu...
-        rem Cài thư viện requests nếu cần
-        %PYTHON_CMD% -m pip install requests >nul 2>&1
+    if "!HAS_PYTHON!"=="1" (
+        echo     Dang sinh du lieu mau...
+        !PYTHON_CMD! -m pip install requests >nul 2>&1
         cd /d "%PROJECT_ROOT%"
-        %PYTHON_CMD% data/shopee_scraper.py
-        if !ERRORLEVEL! EQU 0 (
-            echo  ✅ Đã sinh dữ liệu mẫu thành công!
-        ) else (
-            echo  ⚠️  Lỗi khi sinh dữ liệu - bạn có thể bỏ qua nếu đã có data
-        )
+        !PYTHON_CMD! data/shopee_scraper.py
+        echo  [OK] Da sinh du lieu mau
     ) else (
-        echo  ⚠️  Không có Python - không thể sinh dữ liệu tự động
-        echo     → Chạy sau: python data/shopee_scraper.py
+        echo  [!] Khong co Python - khong the sinh du lieu
     )
 )
-
-echo.
-echo ═══════════════════════════════════════════════════════════
+echo  ========================================================
 
 :: ============================================
-:: BƯỚC 4: IMPORT DỮ LIỆU TỪ CSV VÀO DATABASE
+:: BUOC 4: IMPORT CSV DATA
 :: ============================================
 echo.
-echo  [4/9] 📥 Đang import dữ liệu vào Database...
+echo  [4/9] Import du lieu vao Database...
 
-cd /d "%PROJECT_ROOT%\src\core_app"
-
-:: Kiểm tra nhanh xem DB đã có data chưa
+:: Kiem tra xem da co data chua
 set "NEED_IMPORT=1"
-set "PRODUCT_COUNT=0"
+powershell -NoProfile -Command "try { $c = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;Database=shopeeweb_lab211;TrustServerCertificate=True'); $c.Open(); $q = $c.CreateCommand(); $q.CommandText = 'SELECT COUNT(*) FROM products'; $r = $q.ExecuteScalar(); $c.Close(); Write-Output $r } catch { Write-Output 0 }" 2>nul > "%TEMP%\pcount.txt"
+set /p PRODUCT_COUNT=<"%TEMP%\pcount.txt"
+del /f /q "%TEMP%\pcount.txt" >nul 2>&1
 
-:: Kiểm tra số lượng sản phẩm hiện có
-powershell -NoProfile -Command "try { $conn = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;Database=shopeeweb_lab211;TrustServerCertificate=True;'); $conn.Open(); $cmd = $conn.CreateCommand(); $cmd.CommandText = 'SELECT COUNT(*) FROM products'; $result = $cmd.ExecuteScalar(); $conn.Close(); Write-Output $result } catch { Write-Output 0 }" 2>nul > "%TEMP%\product_count.txt"
-set /p PRODUCT_COUNT=<"%TEMP%\product_count.txt"
-set "PRODUCT_COUNT=!PRODUCT_COUNT: =!"
-del /f /q "%TEMP%\product_count.txt" >nul 2>&1
-
-if "!PRODUCT_COUNT!" GEQ "100" (
-    echo  ✅ Database đã có !PRODUCT_COUNT! sản phẩm - bỏ qua import!
+echo     Hien co: !PRODUCT_COUNT! san pham trong DB
+if !PRODUCT_COUNT! GEQ 100 (
+    echo  [OK] Da co du lieu - bo qua import
     set "NEED_IMPORT=0"
 )
 
 if "!NEED_IMPORT!"=="1" (
     if exist "%PROJECT_ROOT%\data\products.csv" (
-        echo     Đang import dữ liệu từ CSV ^(có thể mất 1-3 phút^)...
-        echo.
-
-        :: ─── Import bằng PowerShell (không cần Maven/Java) ───
-        powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-        "$ErrorActionPreference = 'Continue';" ^
-        "$server = '!SQL_SERVER!';" ^
-        "$pass = '!DB_PASS!';" ^
-        "$dataDir = '!PROJECT_ROOT!\data';" ^
-        "" ^
-        "try {" ^
-        "  $conn = New-Object System.Data.SqlClient.SqlConnection(\"Server=$server;User Id=sa;Password=$pass;Database=shopeeweb_lab211;TrustServerCertificate=True;\");" ^
-        "  $conn.Open();" ^
-        "  Write-Host '  ✅ Kết nối DB thành công';" ^
-        "" ^
-        "  # 1. Import Shops" ^
-        "  $shopsFile = Join-Path $dataDir 'shops.csv';" ^
-        "  if (Test-Path $shopsFile) {" ^
-        "    $shops = Import-Csv $shopsFile;" ^
-        "    $shopCount = 0;" ^
-        "    foreach ($s in $shops) {" ^
-        "      $cmd = $conn.CreateCommand();" ^
-        "      $cmd.CommandText = \"SET IDENTITY_INSERT shops ON; IF NOT EXISTS (SELECT 1 FROM shops WHERE id=$($s.id)) INSERT INTO shops (id, owner_id, shop_name, rating) VALUES ($($s.id), 1, N'$($s.shop_name -replace \"'\",\"''\")', $($s.rating)); SET IDENTITY_INSERT shops OFF;\";" ^
-        "      $cmd.ExecuteNonQuery() | Out-Null;" ^
-        "      $shopCount++;" ^
-        "    }" ^
-        "    Write-Host \"  ✅ Import shops: $shopCount shops\";" ^
-        "  }" ^
-        "" ^
-        "  # 2. Import Products (batch insert)" ^
-        "  $productsFile = Join-Path $dataDir 'products.csv';" ^
-        "  if (Test-Path $productsFile) {" ^
-        "    Write-Host '     Đang import products...';" ^
-        "    $reader = [System.IO.StreamReader]::new($productsFile, [System.Text.Encoding]::UTF8);" ^
-        "    $header = $reader.ReadLine();" ^
-        "    $prodCount = 0;" ^
-        "    $cmd2 = $conn.CreateCommand();" ^
-        "    $cmd2.CommandText = 'SET IDENTITY_INSERT products ON';" ^
-        "    $cmd2.ExecuteNonQuery() | Out-Null;" ^
-        "    while ($null -ne ($line = $reader.ReadLine())) {" ^
-        "      $parts = $line -split ',',6;" ^
-        "      if ($parts.Count -ge 6) {" ^
-        "        try {" ^
-        "          $cmd3 = $conn.CreateCommand();" ^
-        "          $pname = $parts[2] -replace \"'\",\"''\";" ^
-        "          $pdesc = $parts[3] -replace \"'\",\"''\";" ^
-        "          $cmd3.CommandText = \"IF NOT EXISTS (SELECT 1 FROM products WHERE id=$($parts[0])) INSERT INTO products (id,shop_id,name,description,price,image_url) VALUES ($($parts[0]),$($parts[1]),N'$pname',N'$pdesc',$($parts[4]),'$($parts[5])')\";" ^
-        "          $cmd3.ExecuteNonQuery() | Out-Null;" ^
-        "          $prodCount++;" ^
-        "          if ($prodCount %% 2000 -eq 0) { Write-Host \"     ...imported $prodCount products\" }" ^
-        "        } catch {}" ^
-        "      }" ^
-        "    }" ^
-        "    $reader.Close();" ^
-        "    $cmd4 = $conn.CreateCommand();" ^
-        "    $cmd4.CommandText = 'SET IDENTITY_INSERT products OFF';" ^
-        "    $cmd4.ExecuteNonQuery() | Out-Null;" ^
-        "    Write-Host \"  ✅ Import products: $prodCount sản phẩm\";" ^
-        "  }" ^
-        "" ^
-        "  # 3. Import Product Variants (batch insert)" ^
-        "  $variantsFile = Join-Path $dataDir 'product_variants.csv';" ^
-        "  if (Test-Path $variantsFile) {" ^
-        "    Write-Host '     Đang import product_variants...';" ^
-        "    $reader2 = [System.IO.StreamReader]::new($variantsFile, [System.Text.Encoding]::UTF8);" ^
-        "    $header2 = $reader2.ReadLine();" ^
-        "    $varCount = 0;" ^
-        "    $cmd5 = $conn.CreateCommand();" ^
-        "    $cmd5.CommandText = 'SET IDENTITY_INSERT product_variants ON';" ^
-        "    $cmd5.ExecuteNonQuery() | Out-Null;" ^
-        "    while ($null -ne ($line2 = $reader2.ReadLine())) {" ^
-        "      $p2 = $line2 -split ',',7;" ^
-        "      if ($p2.Count -ge 6) {" ^
-        "        try {" ^
-        "          $cmd6 = $conn.CreateCommand();" ^
-        "          $stock = [Math]::Max(0, [int]$p2[4]);" ^
-        "          $price = [double]$p2[5]; if ($price -le 0) { $price = 50000 };" ^
-        "          $note = if ($p2.Count -ge 7) { $p2[6] -replace \"'\",\"''\" } else { '' };" ^
-        "          $cmd6.CommandText = \"IF NOT EXISTS (SELECT 1 FROM product_variants WHERE id=$($p2[0])) INSERT INTO product_variants (id,product_id,color,size,stock,price,note) VALUES ($($p2[0]),$($p2[1]),N'$($p2[2])',N'$($p2[3])',$stock,$price,N'$note')\";" ^
-        "          $cmd6.ExecuteNonQuery() | Out-Null;" ^
-        "          $varCount++;" ^
-        "          if ($varCount %% 5000 -eq 0) { Write-Host \"     ...imported $varCount variants\" }" ^
-        "        } catch {}" ^
-        "      }" ^
-        "    }" ^
-        "    $reader2.Close();" ^
-        "    $cmd7 = $conn.CreateCommand();" ^
-        "    $cmd7.CommandText = 'SET IDENTITY_INSERT product_variants OFF';" ^
-        "    $cmd7.ExecuteNonQuery() | Out-Null;" ^
-        "    Write-Host \"  ✅ Import variants: $varCount variants\";" ^
-        "  }" ^
-        "" ^
-        "  $conn.Close();" ^
-        "  Write-Host '  ✅ Import dữ liệu hoàn tất!';" ^
-        "  exit 0;" ^
-        "} catch {" ^
-        "  Write-Host \"  ❌ Lỗi import: $_\";" ^
-        "  exit 1;" ^
-        "}"
-
+        echo     Dang import du lieu tu CSV...
+        powershell -NoProfile -ExecutionPolicy Bypass -File "%PROJECT_ROOT%\import_data.ps1" -Server "!SQL_SERVER!" -Password "!DB_PASS!" -DataDir "%PROJECT_ROOT%\data"
         if !ERRORLEVEL! EQU 0 (
-            echo.
-            echo  ✅ Import dữ liệu thành công!
+            echo  [OK] Import du lieu thanh cong!
         ) else (
-            echo  ⚠️  Import gặp lỗi - server vẫn chạy nhưng có thể thiếu data
+            echo  [!] Import co loi - tiep tuc...
         )
     ) else (
-        echo  ⚠️  Không tìm thấy file CSV trong thư mục data/
-        echo     → Chạy: python data/shopee_scraper.py trước
+        echo  [!] Khong tim thay file CSV
     )
 )
-
-echo.
-echo ═══════════════════════════════════════════════════════════
+echo  ========================================================
 
 :: ============================================
-:: BƯỚC 5: FIX CATEGORY MAPPING
+:: BUOC 5: FIX CATEGORY MAPPING
 :: ============================================
 echo.
-echo  [5/9] 🏷️  Đang gán category cho sản phẩm...
+echo  [5/9] Gan category cho san pham...
 
 if exist "%PROJECT_ROOT%\src\core_app\fix_category_v2.sql" (
-    if "%HAS_SQLCMD%"=="1" (
+    if "!HAS_SQLCMD!"=="1" (
         sqlcmd -S !SQL_SERVER! -U sa -P !DB_PASS! -C -d shopeeweb_lab211 -i "%PROJECT_ROOT%\src\core_app\fix_category_v2.sql" -b >nul 2>&1
     ) else (
-        powershell -NoProfile -Command "try { $conn = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;Database=shopeeweb_lab211;TrustServerCertificate=True;'); $conn.Open(); $sql = Get-Content '!PROJECT_ROOT!\src\core_app\fix_category_v2.sql' -Raw; foreach($batch in ($sql -split '\bGO\b')) { if($batch.Trim()) { $cmd = $conn.CreateCommand(); $cmd.CommandText = $batch; $cmd.CommandTimeout = 120; $cmd.ExecuteNonQuery() | Out-Null } }; $conn.Close(); exit 0 } catch { exit 1 }" >nul 2>&1
+        powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $c = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;Database=shopeeweb_lab211;TrustServerCertificate=True'); $c.Open(); $sql = Get-Content '!PROJECT_ROOT!\src\core_app\fix_category_v2.sql' -Raw; foreach($b in ($sql -split '\bGO\b')) { if($b.Trim()) { $q = $c.CreateCommand(); $q.CommandText = $b; $q.CommandTimeout = 120; $q.ExecuteNonQuery() | Out-Null } }; $c.Close() } catch {}" >nul 2>&1
     )
-    if !ERRORLEVEL! EQU 0 (
-        echo  ✅ Đã gán category cho tất cả sản phẩm!
-    ) else (
-        echo  ⚠️  Fix category có thể đã chạy trước đó - tiếp tục...
-    )
+    echo  [OK] Da gan category
 ) else (
-    echo  ⚠️  Không tìm thấy fix_category_v2.sql - bỏ qua
+    echo  [!] Khong tim thay fix_category_v2.sql
 )
-
-echo.
-echo ═══════════════════════════════════════════════════════════
+echo  ========================================================
 
 :: ============================================
-:: BƯỚC 6: TẠO DATABASE INDEXES
+:: BUOC 6: TAO INDEXES
 :: ============================================
 echo.
-echo  [6/9] ⚡ Đang tạo indexes tối ưu hiệu suất...
+echo  [6/9] Tao indexes toi uu hieu suat...
 
 if exist "%PROJECT_ROOT%\src\core_app\create_indexes.sql" (
-    if "%HAS_SQLCMD%"=="1" (
+    if "!HAS_SQLCMD!"=="1" (
         sqlcmd -S !SQL_SERVER! -U sa -P !DB_PASS! -C -d shopeeweb_lab211 -i "%PROJECT_ROOT%\src\core_app\create_indexes.sql" -b >nul 2>&1
     ) else (
-        powershell -NoProfile -Command "try { $conn = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;Database=shopeeweb_lab211;TrustServerCertificate=True;'); $conn.Open(); $sql = Get-Content '!PROJECT_ROOT!\src\core_app\create_indexes.sql' -Raw; foreach($batch in ($sql -split '\bGO\b')) { if($batch.Trim()) { $cmd = $conn.CreateCommand(); $cmd.CommandText = $batch; $cmd.ExecuteNonQuery() | Out-Null } }; $conn.Close(); exit 0 } catch { exit 1 }" >nul 2>&1
+        powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $c = New-Object System.Data.SqlClient.SqlConnection('Server=!SQL_SERVER!;User Id=sa;Password=!DB_PASS!;Database=shopeeweb_lab211;TrustServerCertificate=True'); $c.Open(); $sql = Get-Content '!PROJECT_ROOT!\src\core_app\create_indexes.sql' -Raw; foreach($b in ($sql -split '\bGO\b')) { if($b.Trim()) { $q = $c.CreateCommand(); $q.CommandText = $b; $q.ExecuteNonQuery() | Out-Null } }; $c.Close() } catch {}" >nul 2>&1
     )
-    if !ERRORLEVEL! EQU 0 (
-        echo  ✅ Đã tạo indexes tối ưu hiệu suất!
-    ) else (
-        echo  ⚠️  Indexes có thể đã tồn tại - tiếp tục...
-    )
+    echo  [OK] Da tao indexes
 ) else (
-    echo  ⚠️  Không tìm thấy create_indexes.sql - bỏ qua
+    echo  [!] Khong tim thay create_indexes.sql
 )
-
-echo.
-echo ═══════════════════════════════════════════════════════════
+echo  ========================================================
 
 :: ============================================
-:: BƯỚC 7: TẮT TOMCAT CŨ
+:: BUOC 7: TAT TOMCAT CU
 :: ============================================
 echo.
-echo  [7/9] 🔄 Đang tắt Tomcat cũ ^(nếu có^)...
+echo  [7/9] Tat Tomcat cu...
 
 cd /d "%PROJECT_ROOT%\src\core_app"
-set "CATALINA_HOME=%cd%\tomcat_dir\apache-tomcat-10.1.19"
-
-cmd /c ""tomcat_dir\apache-tomcat-10.1.19\bin\shutdown.bat" >nul 2>&1"
-timeout /t 3 /nobreak >nul
-echo  ✅ Đã tắt Tomcat cũ
-
-echo.
-echo ═══════════════════════════════════════════════════════════
+if exist "tomcat_dir\apache-tomcat-10.1.19\bin\shutdown.bat" (
+    call "tomcat_dir\apache-tomcat-10.1.19\bin\shutdown.bat" >nul 2>&1
+    timeout /t 3 /nobreak >nul
+)
+echo  [OK] Tomcat cu da tat
+echo  ========================================================
 
 :: ============================================
-:: BƯỚC 8: BUILD PROJECT
+:: BUOC 8: BUILD PROJECT
 :: ============================================
 echo.
-echo  [8/9] 🔨 Đang build project ^(lần đầu có thể mất 2-5 phút^)...
-echo.
+echo  [8/9] Build project - co the mat 2-5 phut...
 
 cd /d "%PROJECT_ROOT%\src\core_app"
 del /f /q "target\shopee-web-1.0-SNAPSHOT.war" >nul 2>&1
 
-set "BUILD_LOG=%TEMP%\shopee_build.log"
-echo     Đang chạy Maven build...
-call "!MVN_CMD!" clean package -DskipTests > "!BUILD_LOG!" 2>&1
-set BUILD_EXIT=!ERRORLEVEL!
+echo     Dang chay Maven build...
+call "!MVN_CMD!" clean package -DskipTests > "%TEMP%\shopee_build.log" 2>&1
 
-copy /Y "!BUILD_LOG!" "%PROJECT_ROOT%\build_log.txt" >nul 2>&1
+copy /Y "%TEMP%\shopee_build.log" "%PROJECT_ROOT%\build_log.txt" >nul 2>&1
 
 if not exist "target\shopee-web-1.0-SNAPSHOT.war" (
     color 0C
     echo.
-    echo  ╔══════════════════════════════════════════════╗
-    echo  ║   ❌ BUILD THẤT BẠI! Kiểm tra lỗi ở trên   ║
-    echo  ╠══════════════════════════════════════════════╣
-    echo  ║   Nguyên nhân thường gặp:                    ║
-    echo  ║   - Chưa cài JDK 17                         ║
-    echo  ║   - Không có Internet ^(Maven tải thư viện^)  ║
-    echo  ╠══════════════════════════════════════════════╣
-    echo  ║   Xem chi tiết lỗi trong file:               ║
-    echo  ║   build_log.txt                              ║
-    echo  ╚══════════════════════════════════════════════╝
+    echo  ================================================
+    echo    BUILD THAT BAI - Kiem tra loi:
+    echo  ================================================
+    echo    - Chua cai JDK 17?
+    echo    - Khong co Internet?
+    echo    Xem chi tiet: build_log.txt
+    echo  ================================================
     echo.
-    echo  --- DÒNG LỖI BUILD ---
-    findstr /C:"[ERROR]" "%BUILD_LOG%" 2>nul
+    findstr /C:"[ERROR]" "%TEMP%\shopee_build.log" 2>nul
     echo.
     pause
     exit /b 1
 )
-echo  ✅ Build thành công!
-
-echo.
-echo ═══════════════════════════════════════════════════════════
+echo  [OK] Build thanh cong!
+echo  ========================================================
 
 :: ============================================
-:: BƯỚC 9: DEPLOY & CHẠY SERVER
+:: BUOC 9: DEPLOY VA CHAY SERVER
 :: ============================================
 echo.
-echo  [9/9] 🚀 Đang deploy và khởi động server...
+echo  [9/9] Deploy va khoi dong server...
 
-:: Xóa thư mục webapps cũ để deploy sạch
+cd /d "%PROJECT_ROOT%\src\core_app"
+
 if exist "tomcat_dir\apache-tomcat-10.1.19\webapps\ROOT" (
     rmdir /s /q "tomcat_dir\apache-tomcat-10.1.19\webapps\ROOT" >nul 2>&1
 )
 
-:: Copy WAR vào Tomcat
 copy /Y "target\shopee-web-1.0-SNAPSHOT.war" "tomcat_dir\apache-tomcat-10.1.19\webapps\ROOT.war" >nul
-echo  ✅ Deploy thành công!
+echo  [OK] Deploy thanh cong!
 
 echo.
 color 0A
-echo  ╔══════════════════════════════════════════════════════════╗
-echo  ║                                                          ║
-echo  ║   🎉  MỌI THỨ ĐÃ SẴN SÀNG!  🎉                       ║
-echo  ║                                                          ║
-echo  ║   Server:   !SQL_SERVER!                                 ║
-echo  ║   Database: shopeeweb_lab211                             ║
-echo  ║   Password: !DB_PASS!                                    ║
-echo  ║                                                          ║
-echo  ║   Đợi khoảng 10 giây để server khởi động...             ║
-echo  ║                                                          ║
-echo  ║   Sau đó mở trình duyệt và truy cập:                    ║
-echo  ║                                                          ║
-echo  ║   👉  http://localhost:8080/home                         ║
-echo  ║                                                          ║
-echo  ║   Tài khoản: admin / admin123                            ║
-echo  ║                                                          ║
-echo  ║   Nhấn Ctrl+C để tắt server                             ║
-echo  ║                                                          ║
-echo  ╚══════════════════════════════════════════════════════════╝
+echo  ========================================================
 echo.
+echo    MOI THU DA SAN SANG!
+echo.
+echo    Server:   !SQL_SERVER!
+echo    Database: shopeeweb_lab211
+echo    Password: !DB_PASS!
+echo.
+echo    Doi 10 giay de server khoi dong...
+echo    Mo trinh duyet va truy cap:
+echo.
+echo    http://localhost:8080/home
+echo.
+echo    Tai khoan: admin / admin123
+echo.
+echo    Nhan Ctrl+C de tat server
+echo.
+echo  ========================================================
 
-:: Tự mở trình duyệt sau 10 giây
+:: Mo trinh duyet sau 10 giay
 start "" cmd /c "timeout /t 10 /nobreak >nul && start http://localhost:8080/home"
 
-:: Khởi động Tomcat (giữ cửa sổ log)
+:: Chay Tomcat
 call "tomcat_dir\apache-tomcat-10.1.19\bin\catalina.bat" run
 
-:: Nếu Tomcat tắt, script sẽ đến đây
 echo.
-echo  Server đã dừng. Nhấn phím bất kỳ để thoát...
+echo  Server da dung.
 pause >nul
 goto :END_SCRIPT
 
 :: ============================================
-:: HÀM PHỤ TRỢ
+:: HAM PHU TRO
 :: ============================================
 
 :REFRESH_PATH
-:: Refresh biến PATH từ Registry để nhận phần mềm vừa cài
 for /f "tokens=2*" %%A in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v PATH 2^>nul') do set "SYS_PATH=%%B"
 for /f "tokens=2*" %%A in ('reg query "HKCU\Environment" /v PATH 2^>nul') do set "USR_PATH=%%B"
 set "PATH=!SYS_PATH!;!USR_PATH!"
