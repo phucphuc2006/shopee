@@ -558,7 +558,7 @@ if "!PRODUCT_COUNT!" GEQ "100" (
     set "NEED_IMPORT=0"
 )
 
-if "%NEED_IMPORT%"=="1" (
+if "!NEED_IMPORT!"=="1" (
     if exist "%PROJECT_ROOT%\data\products.csv" (
         echo     Đang import dữ liệu từ CSV ^(có thể mất 1-3 phút^)...
         echo.
@@ -609,7 +609,7 @@ if "%NEED_IMPORT%"=="1" (
         "          $cmd3.CommandText = \"IF NOT EXISTS (SELECT 1 FROM products WHERE id=$($parts[0])) INSERT INTO products (id,shop_id,name,description,price,image_url) VALUES ($($parts[0]),$($parts[1]),N'$pname',N'$pdesc',$($parts[4]),'$($parts[5])')\";" ^
         "          $cmd3.ExecuteNonQuery() | Out-Null;" ^
         "          $prodCount++;" ^
-        "          if ($prodCount %% 2000 -eq 0) { Write-Host \"     → $prodCount sản phẩm...\" }" ^
+        "          if ($prodCount %% 2000 -eq 0) { Write-Host \"     ...imported $prodCount products\" }" ^
         "        } catch {}" ^
         "      }" ^
         "    }" ^
@@ -641,7 +641,7 @@ if "%NEED_IMPORT%"=="1" (
         "          $cmd6.CommandText = \"IF NOT EXISTS (SELECT 1 FROM product_variants WHERE id=$($p2[0])) INSERT INTO product_variants (id,product_id,color,size,stock,price,note) VALUES ($($p2[0]),$($p2[1]),N'$($p2[2])',N'$($p2[3])',$stock,$price,N'$note')\";" ^
         "          $cmd6.ExecuteNonQuery() | Out-Null;" ^
         "          $varCount++;" ^
-        "          if ($varCount %% 5000 -eq 0) { Write-Host \"     → $varCount variants...\" }" ^
+        "          if ($varCount %% 5000 -eq 0) { Write-Host \"     ...imported $varCount variants\" }" ^
         "        } catch {}" ^
         "      }" ^
         "    }" ^
@@ -750,10 +750,11 @@ cd /d "%PROJECT_ROOT%\src\core_app"
 del /f /q "target\shopee-web-1.0-SNAPSHOT.war" >nul 2>&1
 
 set "BUILD_LOG=%TEMP%\shopee_build.log"
-cmd /c "%MVN_CMD% clean package > "%BUILD_LOG%" 2>&1"
-set BUILD_EXIT=%ERRORLEVEL%
+echo     Đang chạy Maven build...
+call "!MVN_CMD!" clean package -DskipTests > "!BUILD_LOG!" 2>&1
+set BUILD_EXIT=!ERRORLEVEL!
 
-copy /Y "%BUILD_LOG%" "%PROJECT_ROOT%\build_log.txt" >nul 2>&1
+copy /Y "!BUILD_LOG!" "%PROJECT_ROOT%\build_log.txt" >nul 2>&1
 
 if not exist "target\shopee-web-1.0-SNAPSHOT.war" (
     color 0C
@@ -824,6 +825,12 @@ start "" cmd /c "timeout /t 10 /nobreak >nul && start http://localhost:8080/home
 :: Khởi động Tomcat (giữ cửa sổ log)
 call "tomcat_dir\apache-tomcat-10.1.19\bin\catalina.bat" run
 
+:: Nếu Tomcat tắt, script sẽ đến đây
+echo.
+echo  Server đã dừng. Nhấn phím bất kỳ để thoát...
+pause >nul
+goto :END_SCRIPT
+
 :: ============================================
 :: HÀM PHỤ TRỢ
 :: ============================================
@@ -834,3 +841,6 @@ for /f "tokens=2*" %%A in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Ses
 for /f "tokens=2*" %%A in ('reg query "HKCU\Environment" /v PATH 2^>nul') do set "USR_PATH=%%B"
 set "PATH=!SYS_PATH!;!USR_PATH!"
 goto :EOF
+
+:END_SCRIPT
+exit /b 0
