@@ -58,42 +58,62 @@ if %ERRORLEVEL% NEQ 0 (
 :: --- Maven ---
 echo.
 echo  -- Kiem tra Apache Maven --
-set "MVN_CMD=mvn"
-where mvn >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    if exist "C:\maven\bin\mvn.cmd" (
-        set "MVN_CMD=C:\maven\bin\mvn.cmd"
-        echo  [OK] Maven: C:\maven
-    ) else (
-        echo  [X] Maven chua cai. Dang tai...
-        set "MAVEN_VER=3.9.9"
-        set "MAVEN_URL=https://dlcdn.apache.org/maven/maven-3/!MAVEN_VER!/binaries/apache-maven-!MAVEN_VER!-bin.zip"
-        set "MAVEN_ZIP=%TEMP%\maven.zip"
-        powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '!MAVEN_URL!' -OutFile '!MAVEN_ZIP!'" >nul 2>&1
-        if exist "!MAVEN_ZIP!" (
-            powershell -NoProfile -Command "Expand-Archive -Path '!MAVEN_ZIP!' -DestinationPath 'C:\' -Force" >nul 2>&1
-            if exist "C:\apache-maven-!MAVEN_VER!" (
-                if exist "C:\maven" rmdir /s /q "C:\maven" >nul 2>&1
-                ren "C:\apache-maven-!MAVEN_VER!" "maven" >nul 2>&1
-            )
-            if exist "C:\maven\bin\mvn.cmd" (
-                set "MVN_CMD=C:\maven\bin\mvn.cmd"
-                set "PATH=!PATH!;C:\maven\bin"
-                echo  [OK] Maven cai thanh cong
-            ) else (
-                echo  [X] Cai Maven that bai.
-                pause
-                exit /b 1
-            )
-            del /f /q "!MAVEN_ZIP!" >nul 2>&1
+set "MVN_CMD="
+
+:: Tim mvn.cmd o cac vi tri pho bien
+for %%M in (
+    "C:\maven\bin\mvn.cmd"
+    "C:\Program Files\apache-maven\bin\mvn.cmd"
+    "C:\apache-maven\bin\mvn.cmd"
+) do (
+    if exist %%M (
+        if "!MVN_CMD!"=="" (
+            set "MVN_CMD=%%~M"
+        )
+    )
+)
+
+:: Neu chua tim thay, dung where
+if "!MVN_CMD!"=="" (
+    for /f "delims=" %%F in ('where mvn.cmd 2^>nul') do (
+        if "!MVN_CMD!"=="" set "MVN_CMD=%%F"
+    )
+)
+if "!MVN_CMD!"=="" (
+    for /f "delims=" %%F in ('where mvn 2^>nul') do (
+        if "!MVN_CMD!"=="" set "MVN_CMD=%%F"
+    )
+)
+
+if "!MVN_CMD!" NEQ "" (
+    echo  [OK] Maven: !MVN_CMD!
+) else (
+    echo  [X] Maven chua cai. Dang tai...
+    set "MAVEN_VER=3.9.9"
+    set "MAVEN_URL=https://dlcdn.apache.org/maven/maven-3/!MAVEN_VER!/binaries/apache-maven-!MAVEN_VER!-bin.zip"
+    set "MAVEN_ZIP=%TEMP%\maven.zip"
+    powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '!MAVEN_URL!' -OutFile '!MAVEN_ZIP!'" >nul 2>&1
+    if exist "!MAVEN_ZIP!" (
+        powershell -NoProfile -Command "Expand-Archive -Path '!MAVEN_ZIP!' -DestinationPath 'C:\' -Force" >nul 2>&1
+        if exist "C:\apache-maven-!MAVEN_VER!" (
+            if exist "C:\maven" rmdir /s /q "C:\maven" >nul 2>&1
+            ren "C:\apache-maven-!MAVEN_VER!" "maven" >nul 2>&1
+        )
+        if exist "C:\maven\bin\mvn.cmd" (
+            set "MVN_CMD=C:\maven\bin\mvn.cmd"
+            set "PATH=!PATH!;C:\maven\bin"
+            echo  [OK] Maven cai thanh cong
         ) else (
-            echo  [X] Khong the tai Maven.
+            echo  [X] Cai Maven that bai.
             pause
             exit /b 1
         )
+        del /f /q "!MAVEN_ZIP!" >nul 2>&1
+    ) else (
+        echo  [X] Khong the tai Maven.
+        pause
+        exit /b 1
     )
-) else (
-    echo  [OK] Maven da cai
 )
 
 :: --- Python ---
@@ -272,12 +292,34 @@ if "!SQL_INSTANCE!"=="" (
 echo db.user=sa>> "!DB_PROPS!"
 echo db.password=!DB_PASS!>> "!DB_PROPS!"
 echo.>> "!DB_PROPS!"
+
+:: Doc Google OAuth config
 echo # GOOGLE OAUTH>> "!DB_PROPS!"
-echo google.client.id=>> "!DB_PROPS!"
-echo google.client.secret=>> "!DB_PROPS!"
+set "G_ID="
+set "G_SECRET="
+if exist "%PROJECT_ROOT%\google_oauth.config" (
+    for /f "usebackq tokens=1,* delims==" %%A in ("%PROJECT_ROOT%\google_oauth.config") do (
+        if "%%A"=="CLIENT_ID" set "G_ID=%%B"
+        if "%%A"=="CLIENT_SECRET" set "G_SECRET=%%B"
+    )
+    echo     [OK] Doc google_oauth.config
+)
+echo google.client.id=!G_ID!>> "!DB_PROPS!"
+echo google.client.secret=!G_SECRET!>> "!DB_PROPS!"
+
+:: Doc Facebook OAuth config
 echo # FACEBOOK OAUTH>> "!DB_PROPS!"
-echo facebook.app.id=>> "!DB_PROPS!"
-echo facebook.app.secret=>> "!DB_PROPS!"
+set "F_ID="
+set "F_SECRET="
+if exist "%PROJECT_ROOT%\facebook_oauth.config" (
+    for /f "usebackq tokens=1,* delims==" %%A in ("%PROJECT_ROOT%\facebook_oauth.config") do (
+        if "%%A"=="APP_ID" set "F_ID=%%B"
+        if "%%A"=="APP_SECRET" set "F_SECRET=%%B"
+    )
+    echo     [OK] Doc facebook_oauth.config
+)
+echo facebook.app.id=!F_ID!>> "!DB_PROPS!"
+echo facebook.app.secret=!F_SECRET!>> "!DB_PROPS!"
 
 echo  [OK] db.properties da cap nhat
 echo  ========================================================
@@ -404,8 +446,9 @@ echo.
 echo  [7/9] Tat Tomcat cu...
 
 cd /d "%PROJECT_ROOT%\src\core_app"
-if exist "tomcat_dir\apache-tomcat-10.1.19\bin\shutdown.bat" (
-    call "tomcat_dir\apache-tomcat-10.1.19\bin\shutdown.bat" >nul 2>&1
+set "CATALINA_HOME=%PROJECT_ROOT%\src\core_app\tomcat_dir\apache-tomcat-10.1.19"
+if exist "!CATALINA_HOME!\bin\shutdown.bat" (
+    call "!CATALINA_HOME!\bin\shutdown.bat" >nul 2>&1
     timeout /t 3 /nobreak >nul
 )
 echo  [OK] Tomcat cu da tat
@@ -420,10 +463,27 @@ echo  [8/9] Build project - co the mat 2-5 phut...
 cd /d "%PROJECT_ROOT%\src\core_app"
 del /f /q "target\shopee-web-1.0-SNAPSHOT.war" >nul 2>&1
 
+:: Fallback neu MVN_CMD trong
+if "!MVN_CMD!"=="" (
+    echo     [!] MVN_CMD khong duoc set, thu tim lai...
+    for /f "delims=" %%F in ('where mvn.cmd 2^>nul') do set "MVN_CMD=%%F"
+    if "!MVN_CMD!"=="" (
+        if exist "C:\maven\bin\mvn.cmd" set "MVN_CMD=C:\maven\bin\mvn.cmd"
+    )
+    if "!MVN_CMD!"=="" (
+        echo     [X] Khong tim thay Maven! Cai dat thu cong.
+        pause
+        exit /b 1
+    )
+)
+
+echo     Maven: !MVN_CMD!
 echo     Dang chay Maven build...
 call "!MVN_CMD!" clean package -DskipTests > "%TEMP%\shopee_build.log" 2>&1
+set "MVN_EXIT=!ERRORLEVEL!"
 
 copy /Y "%TEMP%\shopee_build.log" "%PROJECT_ROOT%\build_log.txt" >nul 2>&1
+echo     Maven exit code: !MVN_EXIT!
 
 if not exist "target\shopee-web-1.0-SNAPSHOT.war" (
     color 0C
@@ -483,8 +543,24 @@ echo  ========================================================
 :: Mo trinh duyet sau 10 giay
 start "" cmd /c "timeout /t 10 /nobreak >nul && start http://localhost:8080/home"
 
+:: Set CATALINA_HOME truoc khi chay Tomcat
+set "CATALINA_HOME=%PROJECT_ROOT%\src\core_app\tomcat_dir\apache-tomcat-10.1.19"
+echo     CATALINA_HOME: !CATALINA_HOME!
+
+:: Set JAVA_HOME neu can
+if "!JAVA_HOME!"=="" (
+    for /f "delims=" %%J in ('where java 2^>nul') do (
+        set "JAVA_EXE=%%J"
+    )
+    if defined JAVA_EXE (
+        for %%D in ("!JAVA_EXE!") do set "JAVA_BIN=%%~dpD"
+        for %%D in ("!JAVA_BIN!..") do set "JAVA_HOME=%%~fD"
+        echo     JAVA_HOME: !JAVA_HOME!
+    )
+)
+
 :: Chay Tomcat
-call "tomcat_dir\apache-tomcat-10.1.19\bin\catalina.bat" run
+call "!CATALINA_HOME!\bin\catalina.bat" run
 
 echo.
 echo  Server da dung.

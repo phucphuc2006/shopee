@@ -59,3 +59,80 @@
 08-Mar-2026 09:00:57.228 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19\webapps\manager] has finished in [192] ms
 08-Mar-2026 09:00:57.246 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
 08-Mar-2026 09:00:57.941 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [13440] milliseconds
+08-Mar-2026 11:37:06.799 SEVERE [main] org.apache.catalina.startup.Catalina.stopServer Could not contact [localhost:8005] (base port [8005] and offset [0]). Tomcat may not be running.
+08-Mar-2026 11:37:06.801 SEVERE [main] org.apache.catalina.startup.Catalina.stopServer Error stopping Catalina
+	java.net.ConnectException: Connection refused: connect
+		at java.base/sun.nio.ch.Net.connect0(Native Method)
+		at java.base/sun.nio.ch.Net.connect(Net.java:591)
+		at java.base/sun.nio.ch.Net.connect(Net.java:580)
+		at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:593)
+		at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)
+		at java.base/java.net.Socket.connect(Socket.java:633)
+		at java.base/java.net.Socket.connect(Socket.java:583)
+		at java.base/java.net.Socket.<init>(Socket.java:507)
+		at java.base/java.net.Socket.<init>(Socket.java:287)
+		at org.apache.catalina.startup.Catalina.stopServer(Catalina.java:653)
+		at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+		at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+		at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+		at org.apache.catalina.startup.Bootstrap.stopServer(Bootstrap.java:393)
+		at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:481)
+08-Mar-2026 11:37:16.297 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.19
+08-Mar-2026 11:37:16.300 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Feb 14 2024 19:36:50 UTC
+08-Mar-2026 11:37:16.301 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.19.0
+08-Mar-2026 11:37:16.301 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Windows 11
+08-Mar-2026 11:37:16.301 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            10.0
+08-Mar-2026 11:37:16.301 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+08-Mar-2026 11:37:16.302 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot
+08-Mar-2026 11:37:16.302 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           17.0.18+8-LTS
+08-Mar-2026 11:37:16.302 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Microsoft
+08-Mar-2026 11:37:16.302 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19
+08-Mar-2026 11:37:16.302 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19
+08-Mar-2026 11:37:16.309 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19\conf\logging.properties
+08-Mar-2026 11:37:16.310 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+08-Mar-2026 11:37:16.310 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+08-Mar-2026 11:37:16.310 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+08-Mar-2026 11:37:16.310 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+08-Mar-2026 11:37:16.311 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+08-Mar-2026 11:37:16.311 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+08-Mar-2026 11:37:16.311 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+08-Mar-2026 11:37:16.312 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+08-Mar-2026 11:37:16.312 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19
+08-Mar-2026 11:37:16.312 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19
+08-Mar-2026 11:37:16.312 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19\temp
+08-Mar-2026 11:37:16.325 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent The Apache Tomcat Native library which allows using OpenSSL was not found on the java.library.path: [C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Microsoft\jdk-17.0.18.8-hotspot\bin;C:\Users\phucv\AppData\Local\Programs\Python\Python310;C:\Users\phucv\AppData\Local\Programs\Python\Python310\Scripts;C:\ProgramData\Oracle\Java\javapath;c:\Users\phucv\AppData\Local\Programs\cursor\resources\app\bin;C:\Program Files\CocCoc\Browser\Application;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Tesseract-OCR;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\Users\phucv\Downloads\maven-mvnd-1.0.2-windows-amd64\maven-mvnd-1.0.2-windows-amd64;C:\Gradle\gradle-8.14.1-bin\gradle-8.14.1\bin;C:\msys64\ucrt64\bin;C:\Users\phucv\AppData\Local\Microsoft\WindowsApps;C:\Users\phucv\AppData\Roaming\npm;c:\Users\phucv\AppData\Local\P;C:\Program Files\CMake\bin;C:\msys64\mingw64\bin;C:\Users\phucv\opencv\build\x64\vc16\bin;C:\Users\phucv\mingw32\bin;C:\mingw64\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Microsoft SQL Server\160\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\170\Tools\Binn\;C:\Program Files\Microsoft SQL Server\170\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\180\Tools\Binn\;C:\Program Files\Microsoft SQL Server\170\DTS\Binn\;C:\Program Files\Java\jdk-24\bin;D:\NetBeans-17\netbeans\bin;C:\Program Files\PuTTY\;C:\Program Files\Cloudflare\Cloudflare WARP\;C:\Program Files\Git\cmd;C:\Program Files\Void\bin;C:\Program Files\Go\bin;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\Microsoft SQL Server\150\DTS\Binn\;C:\maven\bin;C:\Program Files (x86)\cloudflared\;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files\Docker\Docker\resources\bin;C:\Users\phucv\AppData\Local\Programs\Python\Python312\Scripts\;C:\Users\phucv\AppData\Local\Programs\Python\Python312\;C:\Users\phucv\AppData\Local\Programs\Python\Launcher\;C:\Users\phucv\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\phucv\AppData\Local\Programs\Python\Python310\;C:\Users\phucv\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\phucv\AppData\Local\Programs\cursor\resources\app\bin;C:\opencv\build\x64\vc16\bin;C:\opencv\build\x64\vc16\lib;C:\Users\phucv\AppData\Local\Programs\Ollama;C:\Users\phucv\AppData\Local\GitHubDesktop\bin;C:\Users\phucv\AppData\Local\Programs\Antigravity\bin;C:\flutter\bin;C:\Windsurf\bin;C:\Users\phucv\go\bin;C:\Users\phucv\.dotnet\tools;C:\Users\phucv\AppData\Local\Microsoft\WinGet\Packages\Ngrok.Ngrok_Microsoft.Winget.Source_8wekyb3d8bbwe;C:\Users\phucv\.bun\bin;.]
+08-Mar-2026 11:37:16.522 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8080"]
+08-Mar-2026 11:37:16.556 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [434] milliseconds
+08-Mar-2026 11:37:16.622 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+08-Mar-2026 11:37:16.622 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.19]
+08-Mar-2026 11:37:16.650 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deploying web application archive [C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19\webapps\ROOT.war]
+08-Mar-2026 11:37:18.267 INFO [main] org.apache.jasper.servlet.TldScanner.scanJars At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+08-Mar-2026 11:37:19.494 WARNING [main] org.apache.catalina.util.SessionIdGeneratorBase.createSecureRandom Creation of SecureRandom instance for session ID generation using [SHA1PRNG] took [124] milliseconds.
+08-Mar-2026 11:37:19.533 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive [C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19\webapps\ROOT.war] has finished in [2,883] ms
+08-Mar-2026 11:37:19.534 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deploying web application directory [C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19\webapps\docs]
+08-Mar-2026 11:37:19.580 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19\webapps\docs] has finished in [46] ms
+08-Mar-2026 11:37:19.581 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deploying web application directory [C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19\webapps\examples]
+08-Mar-2026 11:37:20.171 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19\webapps\examples] has finished in [590] ms
+08-Mar-2026 11:37:20.172 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deploying web application directory [C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19\webapps\host-manager]
+08-Mar-2026 11:37:20.224 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19\webapps\host-manager] has finished in [53] ms
+08-Mar-2026 11:37:20.225 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deploying web application directory [C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19\webapps\manager]
+08-Mar-2026 11:37:20.268 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [C:\Users\phucv\Downloads\ShopeeWeb\src\core_app\tomcat_dir\apache-tomcat-10.1.19\webapps\manager] has finished in [43] ms
+08-Mar-2026 11:37:20.274 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
+08-Mar-2026 11:37:20.305 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [3747] milliseconds
+08-Mar-2026 11:40:32.195 INFO [Thread-1] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["http-nio-8080"]
+08-Mar-2026 11:40:32.208 INFO [Thread-1] org.apache.catalina.core.StandardService.stopInternal Stopping service [Catalina]
+08-Mar-2026 11:40:32.211 WARNING [Thread-1] org.apache.catalina.loader.WebappClassLoaderBase.clearReferencesJdbc The web application [ROOT] registered the JDBC driver [com.microsoft.sqlserver.jdbc.SQLServerDriver] but failed to unregister it when the web application was stopped. To prevent a memory leak, the JDBC Driver has been forcibly unregistered.
+08-Mar-2026 11:40:32.212 WARNING [Thread-1] org.apache.catalina.loader.WebappClassLoaderBase.clearReferencesThreads The web application [ROOT] appears to have started a thread named [ShopeeWebPool housekeeper] but has failed to stop it. This is very likely to create a memory leak. Stack trace of thread:
+ java.base@17.0.18/jdk.internal.misc.Unsafe.park(Native Method)
+ java.base@17.0.18/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:252)
+ java.base@17.0.18/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java:1679)
+ java.base@17.0.18/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:1182)
+ java.base@17.0.18/java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(ScheduledThreadPoolExecutor.java:899)
+ java.base@17.0.18/java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1062)
+ java.base@17.0.18/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1122)
+ java.base@17.0.18/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+ java.base@17.0.18/java.lang.Thread.run(Thread.java:840)
+08-Mar-2026 11:40:32.215 SEVERE [Thread-1] org.apache.catalina.loader.WebappClassLoaderBase.checkThreadLocalMapForLeaks The web application [ROOT] created a ThreadLocal with key of type [com.microsoft.sqlserver.jdbc.ActivityCorrelator$1] (value [com.microsoft.sqlserver.jdbc.ActivityCorrelator$1@7de4587]) and a value of type [com.microsoft.sqlserver.jdbc.ActivityId] (value [375c2366-4d0c-49b2-8c90-9466060c739d-1]) but failed to remove it when the web application was stopped. Threads are going to be renewed over time to try and avoid a probable memory leak.
+08-Mar-2026 11:40:32.233 INFO [Thread-1] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["http-nio-8080"]
+08-Mar-2026 11:40:32.253 INFO [Thread-1] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["http-nio-8080"]
